@@ -1,0 +1,31 @@
+{
+  "scan_id": "8bb78921-6543-4210-9876-123456789abc",
+  "verdict": "SUSPICIOUS",
+  "risk_level": "MEDIUM",
+  "risk_score": 60,
+  "scoring_version": "v1.0.0",
+  "indicators": [
+    {
+      "code": "URGENCY_LANGUAGE",
+      "label": "Urgency cues detected in message",
+      "evidence_type": "heuristic",
+      "detail": "Message creates false urgency regarding account suspension."
+    },
+    {
+      "code": "SUSPICIOUS_LINK",
+      "label": "Link destination differs from stated organization",
+      "evidence_type": "heuristic",
+      "detail": "Extracted URL does not match official campus domain."
+    }
+  ],
+  "recommendations": [
+    "Do not click links inside unsolicited or urgent messages.",
+    "Contact campus IT support via official channels to verify account status."
+  ],
+  "checked_at": "2026-10-30T10:05:00Z",
+  "extracted_urls": [
+    "https://example.com/verify-account"
+  ],
+  "analysis_scope": "EXTRACTED_URLS_AND_HEURISTICS",
+  "_mock_notice": "Temporary contract-compliant mock response (Milestone 1). Actual detection logic is scheduled for Milestone 2."
+}

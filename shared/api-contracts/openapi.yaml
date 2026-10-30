@@ -1,0 +1,730 @@
+openapi: 3.1.0
+info:
+  title: SignalSafe Campus API
+  version: 1.0.0
+  description: |
+    Shared REST API for SignalSafe Campus. Authoritative service for threat scanning,
+    explainable phishing risk analysis, incident management, and reporting.
+servers:
+  - url: /api/v1
+    description: API Version 1 Base Path
+
+paths:
+  /health:
+    get:
+      summary: Service health check
+      operationId: getHealth
+      description: Returns basic service health status without disclosing internal infrastructure or credentials.
+      responses:
+        "200":
+          description: Service is healthy and operational.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /scan/url:
+    post:
+      summary: Scan submitted URL
+      operationId: scanUrl
+      description: Analyzes a user-submitted URL for phishing and malicious indicators. Does not navigate to the URL.
+      security:
+        - BearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanUrlRequest"
+      responses:
+        "200":
+          description: Canonical scan result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanResultResponse"
+        "422":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /scan/message:
+    post:
+      summary: Scan message text and extracted URLs
+      operationId: scanMessage
+      description: Analyzes submitted text, extracts embedded URLs, and evaluates risk indicators.
+      security:
+        - BearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanMessageRequest"
+      responses:
+        "200":
+          description: Message scan result with extracted findings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanMessageResponse"
+        "422":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /scan/qr:
+    post:
+      summary: Scan decoded QR content
+      operationId: scanQr
+      description: Evaluates decoded QR content payload. Validates and routes URL payloads to the URL scanner.
+      security:
+        - BearerAuth: []
+        - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanQrRequest"
+      responses:
+        "200":
+          description: QR scan result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanQrResponse"
+        "422":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /incidents:
+    post:
+      summary: Submit a new incident report
+      operationId: createIncident
+      description: Creates an incident report from an authenticated user. Reporter identity is derived from auth token.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIncidentRequest"
+      responses:
+        "201":
+          description: Incident report successfully submitted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateIncidentResponse"
+        "401":
+          description: Missing or invalid authentication token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "422":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    get:
+      summary: List incidents
+      operationId: listIncidents
+      description: Returns incidents visible to the authenticated caller based on their role and campus tenancy.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/IncidentStatus"
+        - name: severity
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/IncidentSeverity"
+        - name: mine
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        "200":
+          description: Paginated incident list.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentListResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /incidents/{id}:
+    get:
+      summary: Get incident detail
+      operationId: getIncidentDetail
+      description: Returns full incident detail after verifying user ownership or campus administrator authority.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Incident details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentDetailResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: Forbidden - caller not permitted to view this incident.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Incident not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    patch:
+      summary: Update incident (Admin only)
+      operationId: updateIncident
+      description: Administrative updates to status, severity, assignment, or investigation notes. Creates an audit record.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIncidentRequest"
+      responses:
+        "200":
+          description: Incident updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IncidentDetailResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: Forbidden - administrator role required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Incident not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /dashboard/stats:
+    get:
+      summary: Get administrative metrics
+      operationId: getDashboardStats
+      description: Returns aggregated metrics scoped to the administrator's campus tenancy.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Dashboard statistics.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStatsResponse"
+        "401":
+          description: Authentication required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "403":
+          description: Forbidden - administrator role required.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase access token (JWT) passed in Authorization header.
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - timestamp
+        - environment
+      properties:
+        status:
+          type: string
+          example: healthy
+        version:
+          type: string
+          example: 1.0.0
+        timestamp:
+          type: string
+          format: date-time
+          example: "2026-10-30T10:00:00Z"
+        environment:
+          type: string
+          example: development
+
+    ScanVerdict:
+      type: string
+      enum: [MALICIOUS, SUSPICIOUS, LOW_RISK, UNKNOWN]
+
+    ScanRiskLevel:
+      type: string
+      enum: [LOW, MEDIUM, HIGH, CRITICAL, UNKNOWN]
+
+    EvidenceType:
+      type: string
+      enum: [heuristic, threat_intelligence, user_report, other]
+
+    IncidentCategory:
+      type: string
+      enum: [PHISHING, MALWARE, CREDENTIAL_HARVESTING, IMPERSONATION, SCAM, OTHER]
+
+    IncidentSeverity:
+      type: string
+      enum: [LOW, MEDIUM, HIGH, CRITICAL]
+
+    IncidentStatus:
+      type: string
+      enum: [SUBMITTED, TRIAGED, INVESTIGATING, RESOLVED, CLOSED]
+
+    ScanIndicator:
+      type: object
+      required:
+        - code
+        - label
+        - evidence_type
+        - detail
+      properties:
+        code:
+          type: string
+          example: LOOKALIKE_HOST
+        label:
+          type: string
+          example: Possible lookalike domain
+        evidence_type:
+          $ref: "#/components/schemas/EvidenceType"
+        detail:
+          type: string
+          example: The hostname resembles a known university service.
+
+    ScanResultResponse:
+      type: object
+      required:
+        - scan_id
+        - verdict
+        - risk_level
+        - risk_score
+        - scoring_version
+        - indicators
+        - recommendations
+        - checked_at
+      properties:
+        scan_id:
+          type: string
+          format: uuid
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        verdict:
+          $ref: "#/components/schemas/ScanVerdict"
+        risk_level:
+          $ref: "#/components/schemas/ScanRiskLevel"
+        risk_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 78
+        scoring_version:
+          type: string
+          example: v1.0.0
+        indicators:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScanIndicator"
+        recommendations:
+          type: array
+          items:
+            type: string
+          example:
+            - Do not enter credentials.
+            - Open the institution website using a saved bookmark.
+        checked_at:
+          type: string
+          format: date-time
+          example: "2026-10-30T10:00:00Z"
+        _mock_notice:
+          type: string
+          description: Clearly indicates temporary mock implementation during Milestone 1.
+
+    ScanUrlRequest:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          example: "https://example.com/login"
+
+    ScanMessageRequest:
+      type: object
+      required:
+        - message_text
+      properties:
+        message_text:
+          type: string
+          example: "Your account will be suspended. Verify at https://example.com"
+
+    ScanMessageResponse:
+      allOf:
+        - $ref: "#/components/schemas/ScanResultResponse"
+        - type: object
+          required:
+            - extracted_urls
+            - analysis_scope
+          properties:
+            extracted_urls:
+              type: array
+              items:
+                type: string
+              example:
+                - "https://example.com"
+            analysis_scope:
+              type: string
+              example: "EXTRACTED_URLS_AND_HEURISTICS"
+
+    ScanQrRequest:
+      type: object
+      required:
+        - decoded_content
+      properties:
+        decoded_content:
+          type: string
+          example: "https://example.com/payment"
+
+    ScanQrResponse:
+      allOf:
+        - $ref: "#/components/schemas/ScanResultResponse"
+        - type: object
+          required:
+            - payload_type
+          properties:
+            payload_type:
+              type: string
+              example: "URL"
+
+    CreateIncidentRequest:
+      type: object
+      required:
+        - category
+        - summary
+      properties:
+        scan_id:
+          type: string
+          format: uuid
+          nullable: true
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        category:
+          $ref: "#/components/schemas/IncidentCategory"
+        summary:
+          type: string
+          example: "Suspicious account verification message"
+        description:
+          type: string
+          nullable: true
+          example: "I received this message and believe it may be fraudulent."
+        evidence_refs:
+          type: array
+          items:
+            type: string
+          default: []
+
+    CreateIncidentResponse:
+      type: object
+      required:
+        - incident_id
+        - status
+        - created_at
+      properties:
+        incident_id:
+          type: string
+          format: uuid
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        status:
+          $ref: "#/components/schemas/IncidentStatus"
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-10-30T10:15:00Z"
+        _mock_notice:
+          type: string
+
+    IncidentDetailResponse:
+      type: object
+      required:
+        - id
+        - created_by
+        - category
+        - severity
+        - status
+        - summary
+        - created_at
+        - updated_at
+      properties:
+        id:
+          type: string
+          format: uuid
+        created_by:
+          type: string
+          format: uuid
+        scan_id:
+          type: string
+          format: uuid
+          nullable: true
+        category:
+          $ref: "#/components/schemas/IncidentCategory"
+        severity:
+          $ref: "#/components/schemas/IncidentSeverity"
+        status:
+          $ref: "#/components/schemas/IncidentStatus"
+        summary:
+          type: string
+        description:
+          type: string
+          nullable: true
+        assigned_to:
+          type: string
+          format: uuid
+          nullable: true
+        campus_id:
+          type: string
+          format: uuid
+          nullable: true
+        notes:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - author_id
+              - note
+              - created_at
+            properties:
+              id:
+                type: string
+                format: uuid
+              author_id:
+                type: string
+                format: uuid
+              note:
+                type: string
+              created_at:
+                type: string
+                format: date-time
+        evidence:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - evidence_type
+              - created_at
+            properties:
+              id:
+                type: string
+                format: uuid
+              evidence_type:
+                type: string
+              storage_path:
+                type: string
+                nullable: true
+              metadata:
+                type: object
+              created_at:
+                type: string
+                format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        _mock_notice:
+          type: string
+
+    UpdateIncidentRequest:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/IncidentStatus"
+        severity:
+          $ref: "#/components/schemas/IncidentSeverity"
+        assigned_to:
+          type: string
+          format: uuid
+          nullable: true
+        note:
+          type: string
+          nullable: true
+
+    IncidentListResponse:
+      type: object
+      required:
+        - items
+        - total
+        - page
+        - page_size
+        - pages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/IncidentDetailResponse"
+        total:
+          type: integer
+          example: 1
+        page:
+          type: integer
+          example: 1
+        page_size:
+          type: integer
+          example: 20
+        pages:
+          type: integer
+          example: 1
+        _mock_notice:
+          type: string
+
+    DashboardStatsResponse:
+      type: object
+      required:
+        - total_scans
+        - total_incidents
+        - open_incidents
+        - resolved_incidents
+        - incidents_by_severity
+        - recent_activity_count
+      properties:
+        total_scans:
+          type: integer
+          example: 142
+        total_incidents:
+          type: integer
+          example: 28
+        open_incidents:
+          type: integer
+          example: 9
+        resolved_incidents:
+          type: integer
+          example: 19
+        incidents_by_severity:
+          type: object
+          properties:
+            LOW:
+              type: integer
+              example: 4
+            MEDIUM:
+              type: integer
+              example: 12
+            HIGH:
+              type: integer
+              example: 8
+            CRITICAL:
+              type: integer
+              example: 4
+        recent_activity_count:
+          type: integer
+          example: 14
+        _mock_notice:
+          type: string
+
+    ErrorDetail:
+      type: object
+      required:
+        - code
+        - message
+        - request_id
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: The submitted URL is invalid.
+        request_id:
+          type: string
+          example: "req-9b81cf71"
+
+    ErrorEnvelope:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          $ref: "#/components/schemas/ErrorDetail"

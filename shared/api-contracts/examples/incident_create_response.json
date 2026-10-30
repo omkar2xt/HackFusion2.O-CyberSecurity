@@ -1,0 +1,6 @@
+{
+  "incident_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "status": "SUBMITTED",
+  "created_at": "2026-10-30T10:15:00Z",
+  "_mock_notice": "Temporary contract-compliant mock response (Milestone 1). Database persistence is scheduled for Milestone 2."
+}
