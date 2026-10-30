@@ -1,0 +1,142 @@
+{
+  "model_name": "ExcelThreatClassifier",
+  "format": "excel",
+  "best_algorithm": "Random Forest",
+  "feature_count": 48,
+  "features": [
+    "file_size",
+    "sheet_count",
+    "max_rows",
+    "max_cols",
+    "total_cells",
+    "non_empty_cells",
+    "numeric_cell_count",
+    "string_cell_count",
+    "formula_count",
+    "hyperlink_count",
+    "avg_cell_length",
+    "entropy_of_text",
+    "base64_pattern_count",
+    "hex_pattern_count",
+    "has_macro",
+    "remote_template_present",
+    "ocr_extracted_text_length",
+    "preview_image_text_entropy",
+    "deceptive_keywords_count_ocr",
+    "macro_line_count",
+    "macro_procedure_count",
+    "macro_chr_count",
+    "macro_string_function_count",
+    "macro_arithmetic_operator_count",
+    "macro_concatenation_count",
+    "macro_callbyname_count",
+    "macro_comment_lines",
+    "macro_average_line_length",
+    "macro_token_count",
+    "macro_count",
+    "uses_file_api",
+    "uses_network_api",
+    "uses_process_api",
+    "merged_cells_count",
+    "hidden_sheets_count",
+    "protected_sheets_count",
+    "named_ranges_count",
+    "empty_sheet_count",
+    "rich_text_formatting_count",
+    "macro_count_parentheses",
+    "macro_count_assignments",
+    "macro_max_line_length",
+    "macro_max_string_literals",
+    "macro_max_arithmetic_ops",
+    "macro_max_concat_ops",
+    "macro_vocab_size",
+    "preview_image_width",
+    "preview_image_height"
+  ],
+  "train_samples": 13999,
+  "test_samples": 3000,
+  "test_metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "roc_auc": 1.0,
+    "fpr": 0.0,
+    "fnr": 0.0,
+    "confusion_matrix": {
+      "tn": 1500,
+      "fp": 0,
+      "fn": 0,
+      "tp": 1500
+    },
+    "train_time_sec": 0.73,
+    "latency_ms_per_sample": 0.0305
+  },
+  "top_features": [
+    {
+      "feature": "entropy_of_text",
+      "importance": 0.1495
+    },
+    {
+      "feature": "macro_token_count",
+      "importance": 0.14
+    },
+    {
+      "feature": "macro_vocab_size",
+      "importance": 0.085
+    },
+    {
+      "feature": "macro_chr_count",
+      "importance": 0.0842
+    },
+    {
+      "feature": "macro_arithmetic_operator_count",
+      "importance": 0.0781
+    },
+    {
+      "feature": "non_empty_cells",
+      "importance": 0.0754
+    },
+    {
+      "feature": "macro_line_count",
+      "importance": 0.067
+    },
+    {
+      "feature": "string_cell_count",
+      "importance": 0.066
+    },
+    {
+      "feature": "numeric_cell_count",
+      "importance": 0.063
+    },
+    {
+      "feature": "max_rows",
+      "importance": 0.0604
+    },
+    {
+      "feature": "macro_max_line_length",
+      "importance": 0.0173
+    },
+    {
+      "feature": "remote_template_present",
+      "importance": 0.0157
+    },
+    {
+      "feature": "avg_cell_length",
+      "importance": 0.0109
+    },
+    {
+      "feature": "macro_average_line_length",
+      "importance": 0.0105
+    },
+    {
+      "feature": "macro_max_arithmetic_ops",
+      "importance": 0.0104
+    }
+  ],
+  "joblib_artifact": "excel_classifier_best.joblib",
+  "joblib_sha256": "442ad3ba3d3fd349d89fcacc4e096219ee175eb86676bc10b7a6d74b988bcb94",
+  "onnx_artifact": "excel_classifier_best.onnx",
+  "onnx_sha256": "962280536b731c498d540c0188ca88974a5589af97e2dd944d68b45e5a2e6a01",
+  "exported_at": "2026-10-30T19:38:54.791687+00:00"
+}

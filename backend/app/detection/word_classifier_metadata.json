@@ -1,0 +1,84 @@
+{
+  "model_name": "WordThreatClassifier",
+  "format": "word",
+  "best_algorithm": "Random Forest",
+  "feature_count": 10,
+  "features": [
+    "ole_object_count",
+    "ole_object_type_count",
+    "macro_present",
+    "dde_present",
+    "vba_keywords_count",
+    "entropy",
+    "struct_ContentType",
+    "struct_PartName",
+    "file_size",
+    "struct_pos"
+  ],
+  "train_samples": 13999,
+  "test_samples": 3000,
+  "test_metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "roc_auc": 1.0,
+    "fpr": 0.0,
+    "fnr": 0.0,
+    "confusion_matrix": {
+      "tn": 1500,
+      "fp": 0,
+      "fn": 0,
+      "tp": 1500
+    },
+    "train_time_sec": 0.67,
+    "latency_ms_per_sample": 0.0273
+  },
+  "top_features": [
+    {
+      "feature": "ole_object_count",
+      "importance": 0.2452
+    },
+    {
+      "feature": "ole_object_type_count",
+      "importance": 0.2101
+    },
+    {
+      "feature": "vba_keywords_count",
+      "importance": 0.2001
+    },
+    {
+      "feature": "macro_present",
+      "importance": 0.17
+    },
+    {
+      "feature": "dde_present",
+      "importance": 0.09
+    },
+    {
+      "feature": "entropy",
+      "importance": 0.0449
+    },
+    {
+      "feature": "struct_ContentType",
+      "importance": 0.0348
+    },
+    {
+      "feature": "struct_PartName",
+      "importance": 0.005
+    },
+    {
+      "feature": "file_size",
+      "importance": 0.0
+    },
+    {
+      "feature": "struct_pos",
+      "importance": 0.0
+    }
+  ],
+  "joblib_artifact": "word_classifier_best.joblib",
+  "joblib_sha256": "c95da877caf9bf38e2d0238ea09aa2b4fb48fd12190cab8e00c99873b7e173ca",
+  "onnx_artifact": "word_classifier_best.onnx",
+  "onnx_sha256": "f9a0e5e0ddfcf4a3f56c6b17fa8109103a67a1d1a6e57684f209f08060d49339",
+  "exported_at": "2026-10-30T19:38:56.982913+00:00"
+}
