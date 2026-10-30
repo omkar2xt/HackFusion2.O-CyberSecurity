@@ -1,0 +1,15 @@
+{
+  "scan_id": "c3d4e5f6-7890-1234-bcde-567890abcdef",
+  "verdict": "LOW_RISK",
+  "risk_level": "LOW",
+  "risk_score": 15,
+  "scoring_version": "v1.0.0",
+  "indicators": [],
+  "recommendations": [
+    "No immediate malicious indicators detected.",
+    "Verify the destination domain before submitting sensitive credentials."
+  ],
+  "checked_at": "2026-10-30T10:10:00Z",
+  "payload_type": "URL",
+  "_mock_notice": "Temporary contract-compliant mock response (Milestone 1). Actual detection logic is scheduled for Milestone 2."
+}

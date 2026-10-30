@@ -1,0 +1,27 @@
+{
+  "scan_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "verdict": "SUSPICIOUS",
+  "risk_level": "HIGH",
+  "risk_score": 78,
+  "scoring_version": "v1.0.0",
+  "indicators": [
+    {
+      "code": "LOOKALIKE_HOST",
+      "label": "Possible lookalike domain",
+      "evidence_type": "heuristic",
+      "detail": "The hostname resembles a known university service."
+    },
+    {
+      "code": "SUSPICIOUS_TLD",
+      "label": "High-risk top-level domain",
+      "evidence_type": "heuristic",
+      "detail": "Domain uses a TLD frequently associated with abusive campaigns."
+    }
+  ],
+  "recommendations": [
+    "Do not enter credentials or passwords.",
+    "Open the institution portal using a verified bookmark."
+  ],
+  "checked_at": "2026-10-30T10:00:00Z",
+  "_mock_notice": "Temporary contract-compliant mock response (Milestone 1). Actual detection logic is scheduled for Milestone 2."
+}

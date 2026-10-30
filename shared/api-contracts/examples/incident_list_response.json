@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "created_by": "00000000-0000-0000-0000-000000000001",
+      "scan_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "category": "PHISHING",
+      "severity": "HIGH",
+      "status": "INVESTIGATING",
+      "summary": "Suspicious account verification message targeting campus email",
+      "description": "I received an email stating that my campus password expired and asking to click a suspicious link.",
+      "assigned_to": "00000000-0000-0000-0000-000000000002",
+      "campus_id": "11111111-1111-1111-1111-111111111111",
+      "notes": [],
+      "evidence": [],
+      "created_at": "2026-10-30T10:15:00Z",
+      "updated_at": "2026-10-30T10:20:00Z"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 20,
+  "pages": 1,
+  "_mock_notice": "Temporary contract-compliant mock response (Milestone 1). Database persistence is scheduled for Milestone 2."
+}

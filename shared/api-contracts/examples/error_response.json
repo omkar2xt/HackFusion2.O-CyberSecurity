@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "The submitted URL is invalid. Scheme must be http or https.",
+    "request_id": "req-9b81cf71-2f3b-48ae-94a1-0987654321ab"
+  }
+}

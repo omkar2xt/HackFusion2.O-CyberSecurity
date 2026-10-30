@@ -1,0 +1,14 @@
+{
+  "total_scans": 142,
+  "total_incidents": 28,
+  "open_incidents": 9,
+  "resolved_incidents": 19,
+  "incidents_by_severity": {
+    "LOW": 4,
+    "MEDIUM": 12,
+    "HIGH": 8,
+    "CRITICAL": 4
+  },
+  "recent_activity_count": 14,
+  "_mock_notice": "Temporary contract-compliant mock response (Milestone 1). Database analytics aggregation is scheduled for Milestone 2."
+}
