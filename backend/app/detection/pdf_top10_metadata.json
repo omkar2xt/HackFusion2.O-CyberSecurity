@@ -1,0 +1,154 @@
+{
+  "task_name": "pdf_top10",
+  "dataset_file": "PDF_Top10_features.csv",
+  "best_algorithm": "Random Forest",
+  "feature_count": 10,
+  "features": [
+    "text_length",
+    "total_filters",
+    "title_chars",
+    "file_size",
+    "object_count",
+    "stream_count",
+    "endstream_count",
+    "metadata_size",
+    "valid_pdf_header",
+    "entropy_of_streams"
+  ],
+  "train_samples": 13506,
+  "test_samples": 2895,
+  "test_metrics": {
+    "accuracy": 0.9962,
+    "precision": 0.998,
+    "recall": 0.9947,
+    "f1": 0.9963,
+    "roc_auc": 0.9991,
+    "fpr": 0.0022,
+    "fnr": 0.0053,
+    "confusion_matrix": {
+      "tn": 1392,
+      "fp": 3,
+      "fn": 8,
+      "tp": 1492
+    },
+    "train_time_sec": 0.88,
+    "latency_ms_per_sample": 0.0324
+  },
+  "all_model_results": {
+    "Decision Tree": {
+      "accuracy": 0.9931,
+      "precision": 0.9953,
+      "recall": 0.9913,
+      "f1": 0.9933,
+      "roc_auc": 0.9947,
+      "fpr": 0.005,
+      "fnr": 0.0087,
+      "confusion_matrix": {
+        "tn": 1388,
+        "fp": 7,
+        "fn": 13,
+        "tp": 1487
+      },
+      "train_time_sec": 0.08,
+      "latency_ms_per_sample": 0.0008
+    },
+    "Logistic Regression": {
+      "accuracy": 0.9544,
+      "precision": 0.9837,
+      "recall": 0.9273,
+      "f1": 0.9547,
+      "roc_auc": 0.9758,
+      "fpr": 0.0165,
+      "fnr": 0.0727,
+      "confusion_matrix": {
+        "tn": 1372,
+        "fp": 23,
+        "fn": 109,
+        "tp": 1391
+      },
+      "train_time_sec": 0.04,
+      "latency_ms_per_sample": 0.0009
+    },
+    "Random Forest": {
+      "accuracy": 0.9962,
+      "precision": 0.998,
+      "recall": 0.9947,
+      "f1": 0.9963,
+      "roc_auc": 0.9991,
+      "fpr": 0.0022,
+      "fnr": 0.0053,
+      "confusion_matrix": {
+        "tn": 1392,
+        "fp": 3,
+        "fn": 8,
+        "tp": 1492
+      },
+      "train_time_sec": 0.88,
+      "latency_ms_per_sample": 0.0324
+    },
+    "XGBoost": {
+      "accuracy": 0.9962,
+      "precision": 0.998,
+      "recall": 0.9947,
+      "f1": 0.9963,
+      "roc_auc": 0.9994,
+      "fpr": 0.0022,
+      "fnr": 0.0053,
+      "confusion_matrix": {
+        "tn": 1392,
+        "fp": 3,
+        "fn": 8,
+        "tp": 1492
+      },
+      "train_time_sec": 0.27,
+      "latency_ms_per_sample": 0.0024
+    }
+  },
+  "top_features": [
+    {
+      "feature": "text_length",
+      "importance": 0.2837
+    },
+    {
+      "feature": "object_count",
+      "importance": 0.217
+    },
+    {
+      "feature": "metadata_size",
+      "importance": 0.1532
+    },
+    {
+      "feature": "file_size",
+      "importance": 0.1293
+    },
+    {
+      "feature": "total_filters",
+      "importance": 0.0878
+    },
+    {
+      "feature": "title_chars",
+      "importance": 0.0749
+    },
+    {
+      "feature": "endstream_count",
+      "importance": 0.0207
+    },
+    {
+      "feature": "stream_count",
+      "importance": 0.0199
+    },
+    {
+      "feature": "entropy_of_streams",
+      "importance": 0.0134
+    },
+    {
+      "feature": "valid_pdf_header",
+      "importance": 0.0
+    }
+  ],
+  "joblib_artifact": "pdf_top10_best.joblib",
+  "joblib_sha256": "8d4649dd31faa9637e8b9b12f86af616125284bd2730a980653e12b46da199a3",
+  "onnx_artifact": "pdf_top10_best.onnx",
+  "onnx_sha256": "e29c693366d656bda124e50e61726672330742fd2b6afa83518da3e15a196215",
+  "exported_at": "2026-10-30T20:18:48.249762+00:00"
+}

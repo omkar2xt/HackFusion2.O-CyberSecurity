@@ -1,0 +1,154 @@
+{
+  "task_name": "excel_top10",
+  "dataset_file": "Excel_Top10_Features.csv",
+  "best_algorithm": "XGBoost",
+  "feature_count": 10,
+  "features": [
+    "entropy_of_text",
+    "macro_chr_count",
+    "macro_vocab_size",
+    "macro_arithmetic_operator_count",
+    "macro_token_count",
+    "macro_max_line_length",
+    "remote_template_present",
+    "numeric_cell_count",
+    "string_cell_count",
+    "avg_cell_length"
+  ],
+  "train_samples": 13999,
+  "test_samples": 3000,
+  "test_metrics": {
+    "accuracy": 0.9997,
+    "precision": 1.0,
+    "recall": 0.9993,
+    "f1": 0.9997,
+    "roc_auc": 1.0,
+    "fpr": 0.0,
+    "fnr": 0.0007,
+    "confusion_matrix": {
+      "tn": 1500,
+      "fp": 0,
+      "fn": 1,
+      "tp": 1499
+    },
+    "train_time_sec": 0.43,
+    "latency_ms_per_sample": 0.0021
+  },
+  "all_model_results": {
+    "Decision Tree": {
+      "accuracy": 0.9983,
+      "precision": 0.9973,
+      "recall": 0.9993,
+      "f1": 0.9983,
+      "roc_auc": 0.9987,
+      "fpr": 0.0027,
+      "fnr": 0.0007,
+      "confusion_matrix": {
+        "tn": 1496,
+        "fp": 4,
+        "fn": 1,
+        "tp": 1499
+      },
+      "train_time_sec": 0.05,
+      "latency_ms_per_sample": 0.0005
+    },
+    "Logistic Regression": {
+      "accuracy": 0.995,
+      "precision": 0.9947,
+      "recall": 0.9953,
+      "f1": 0.995,
+      "roc_auc": 0.9996,
+      "fpr": 0.0053,
+      "fnr": 0.0047,
+      "confusion_matrix": {
+        "tn": 1492,
+        "fp": 8,
+        "fn": 7,
+        "tp": 1493
+      },
+      "train_time_sec": 0.06,
+      "latency_ms_per_sample": 0.0009
+    },
+    "Random Forest": {
+      "accuracy": 0.999,
+      "precision": 0.998,
+      "recall": 1.0,
+      "f1": 0.999,
+      "roc_auc": 1.0,
+      "fpr": 0.002,
+      "fnr": 0.0,
+      "confusion_matrix": {
+        "tn": 1497,
+        "fp": 3,
+        "fn": 0,
+        "tp": 1500
+      },
+      "train_time_sec": 0.77,
+      "latency_ms_per_sample": 0.0305
+    },
+    "XGBoost": {
+      "accuracy": 0.9997,
+      "precision": 1.0,
+      "recall": 0.9993,
+      "f1": 0.9997,
+      "roc_auc": 1.0,
+      "fpr": 0.0,
+      "fnr": 0.0007,
+      "confusion_matrix": {
+        "tn": 1500,
+        "fp": 0,
+        "fn": 1,
+        "tp": 1499
+      },
+      "train_time_sec": 0.43,
+      "latency_ms_per_sample": 0.0021
+    }
+  },
+  "top_features": [
+    {
+      "feature": "entropy_of_text",
+      "importance": 0.8335
+    },
+    {
+      "feature": "macro_chr_count",
+      "importance": 0.1035
+    },
+    {
+      "feature": "macro_max_line_length",
+      "importance": 0.0505
+    },
+    {
+      "feature": "remote_template_present",
+      "importance": 0.0041
+    },
+    {
+      "feature": "avg_cell_length",
+      "importance": 0.0039
+    },
+    {
+      "feature": "macro_vocab_size",
+      "importance": 0.002
+    },
+    {
+      "feature": "numeric_cell_count",
+      "importance": 0.0009
+    },
+    {
+      "feature": "string_cell_count",
+      "importance": 0.0009
+    },
+    {
+      "feature": "macro_arithmetic_operator_count",
+      "importance": 0.0007
+    },
+    {
+      "feature": "macro_token_count",
+      "importance": 0.0
+    }
+  ],
+  "joblib_artifact": "excel_top10_best.joblib",
+  "joblib_sha256": "9095939566d149efd43c8b83cc516097f8c0d844e92d3425b42856d9de0dcc20",
+  "onnx_artifact": "excel_top10_best.onnx",
+  "onnx_sha256": null,
+  "exported_at": "2026-10-30T20:18:36.390541+00:00"
+}
