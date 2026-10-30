@@ -11,7 +11,7 @@ export function SkeletonBox({ className = "h-4 w-full" }: { className?: string }
 
 export function SkeletonCard() {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+    <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-4">
       <div className="flex items-center justify-between">
         <SkeletonBox className="h-5 w-1/3" />
         <SkeletonBox className="h-5 w-16" />
@@ -28,7 +28,7 @@ export function SkeletonCard() {
 
 export function SkeletonTable({ rows = 4 }: { rows?: number }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-xs">
+    <div className="rounded-lg border border-slate-200 bg-white overflow-hidden shadow-sm">
       <div className="border-b border-slate-200 bg-slate-50 px-6 py-3 flex gap-4">
         <SkeletonBox className="h-4 w-28" />
         <SkeletonBox className="h-4 w-48" />

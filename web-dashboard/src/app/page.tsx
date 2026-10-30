@@ -17,7 +17,7 @@ export default function HomePage() {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       
       {/* High Priority Active Campus Advisory Banner */}
-      <div className="rounded-lg border border-amber-300 bg-amber-50/70 p-4 shadow-xs">
+      <div className="rounded-lg border border-amber-300 bg-amber-50/70 p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 rounded-full bg-amber-200/80 p-1 text-amber-900">
@@ -63,7 +63,7 @@ export default function HomePage() {
           <div className="pt-2 flex flex-wrap gap-3">
             <Link
               href="/scan"
-              className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs"
+              className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors shadow-sm"
             >
               <ScanIcon className="h-4 w-4" />
               Analyze Suspicious URL / Message
@@ -71,7 +71,7 @@ export default function HomePage() {
 
             <Link
               href="/report"
-              className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition-colors shadow-xs"
+              className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition-colors shadow-sm"
             >
               <AlertCircleIcon className="h-4 w-4 text-slate-600" />
               File Security Incident Report
@@ -89,7 +89,7 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-slate-900 border border-slate-200">
                 <ScanIcon className="h-5 w-5" />
@@ -106,7 +106,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-slate-900 border border-slate-200">
                 <ShieldIcon className="h-5 w-5" />
@@ -121,7 +121,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-slate-900 border border-slate-200">
                 <AlertCircleIcon className="h-5 w-5" />
@@ -142,7 +142,7 @@ export default function HomePage() {
       </div>
 
       {/* Real Threat Matrix Section */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Monitored Threat Vectors Across Campus</h2>
           <p className="text-xs text-slate-500">Categories prioritized by campus security operations.</p>

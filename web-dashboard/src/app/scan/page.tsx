@@ -250,10 +250,15 @@ function ScanContent() {
     setDocFileName(file.name);
     setErrorMsg("");
 
-    if (file.name.endsWith(".xlsm") || file.name.endsWith(".docm")) {
+    const low = file.name.toLowerCase();
+    if (low.endsWith(".xlsm") || low.endsWith(".docm")) {
       setDocDetails("VBA project stream detected (vbaProject.bin). Auto-executing Workbook_Open procedure found.");
+    } else if (low.endsWith(".pdf")) {
+      setDocDetails("PDF document package. Inspecting object streams, metadata, and embedded actions.");
+    } else if (low.endsWith(".html") || low.endsWith(".htm")) {
+      setDocDetails("HTML attachment. Inspecting script entropy, embedded JavaScript tags, and form actions.");
     } else {
-      setDocDetails("Standard Office OpenXML package. No macro streams identified.");
+      setDocDetails("Standard document package. Clean container structure verified.");
     }
   };
 
@@ -516,7 +521,7 @@ function ScanContent() {
       </div>
 
       {/* Preset Scenarios per Tab */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <p className="text-xs font-semibold text-slate-700 mb-2">
           Quick Verification Scenarios (Click to test):
         </p>
@@ -640,7 +645,18 @@ function ScanContent() {
               }}
               className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
             >
-              Malicious: Exam Schedule with Auto-Executing VBA Macro (.xlsm)
+              Malicious Excel: VBA Macro Dropper (.xlsm)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDocFileName("Campus_Department_Budget_Q3.xlsx");
+                setDocDetails("Standard tabular numeric data. Zero macro procedures or remote templates.");
+                setErrorMsg("");
+              }}
+              className="rounded border border-emerald-200 bg-emerald-50/60 px-3 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100/70 transition-colors"
+            >
+              Benign Excel: Department Budget (.xlsx)
             </button>
             <button
               type="button"
@@ -651,18 +667,29 @@ function ScanContent() {
               }}
               className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
             >
-              Malicious: DDE Command Injection Document (.docm)
+              Malicious Word: DDE Injection (.docm)
             </button>
             <button
               type="button"
               onClick={() => {
-                setDocFileName("Official_Curriculum_Syllabus_2026.xlsx");
-                setDocDetails("Clean OpenXML container. No VBA macro streams or external templates.");
+                setDocFileName("Invoice_Overdue_Notice_Attached.pdf");
+                setDocDetails("Embedded JavaScript stream with automatic OpenAction trigger and external staging payload.");
                 setErrorMsg("");
               }}
-              className="rounded border border-emerald-200 bg-emerald-50/60 px-3 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100/70 transition-colors"
+              className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
             >
-              Benign: Clean Academic Syllabus (.xlsx)
+              Malicious PDF: JS Stream Exploit (.pdf)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDocFileName("Student_SSO_Portal_Login_Update.html");
+                setDocDetails("High-entropy obfuscated script lure with external credential harvesting form action.");
+                setErrorMsg("");
+              }}
+              className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
+            >
+              Malicious HTML: Phishing Form (.html)
             </button>
           </div>
         )}
@@ -704,7 +731,7 @@ function ScanContent() {
       </div>
 
       {/* Input Form Card with Live As-You-Type Interactive Cards */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-6">
         <form onSubmit={handleScan} className="space-y-4">
           
           {errorMsg && (
@@ -998,7 +1025,7 @@ function ScanContent() {
                   type="file"
                   ref={docFileRef}
                   onChange={handleDocFileUpload}
-                  accept=".xlsx,.xlsm,.xls,.docx,.docm,.doc"
+                  accept=".xlsx,.xlsm,.xls,.docx,.docm,.doc,.pdf,.html,.htm"
                   className="hidden"
                 />
                 <div className="flex flex-col items-center justify-center gap-2">
@@ -1009,7 +1036,7 @@ function ScanContent() {
                       onClick={() => docFileRef.current?.click()}
                       className="font-semibold text-slate-900 hover:underline"
                     >
-                      Click to select Office document (.xlsx, .xlsm, .docx, .docm)
+                      Click to select Document (.xlsx, .xlsm, .docx, .docm, .pdf, .html)
                     </button>{" "}
                     or test presets above
                   </p>
@@ -1153,7 +1180,7 @@ function ScanContent() {
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-xs"
+              className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-sm"
             >
               <ScanIcon className="h-4 w-4" />
               {loading ? "Analyzing Pipeline..." : "Run Security Scan"}
@@ -1164,7 +1191,7 @@ function ScanContent() {
 
       {/* ANIMATED FORENSIC DIAGNOSTIC PIPELINE (Active while loading) */}
       {loading && (
-        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4 animate-pulse">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-4 animate-pulse">
           <div className="flex items-center justify-between border-b border-slate-200 pb-3">
             <div className="flex items-center gap-2">
               <RefreshCwIcon className="h-4 w-4 animate-spin text-blue-600" />
@@ -1187,7 +1214,7 @@ function ScanContent() {
                   pipelineStep > st.step
                     ? "border-emerald-200 bg-emerald-50/50 text-emerald-900"
                     : pipelineStep === st.step
-                    ? "border-blue-300 bg-blue-50 text-blue-900 font-semibold shadow-xs"
+                    ? "border-blue-300 bg-blue-50 text-blue-900 font-semibold shadow-sm"
                     : "border-slate-100 bg-slate-50/50 text-slate-400"
                 }`}
               >
@@ -1212,7 +1239,7 @@ function ScanContent() {
 
       {/* ANALYSIS RESULTS DISPLAY */}
       {result && !loading && (
-        <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
           
           {/* Header & Verdict */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-6">
@@ -1437,7 +1464,7 @@ function ScanContent() {
             <button
               type="button"
               onClick={handleEscalateToReport}
-              className="inline-flex items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-xs font-semibold text-white hover:bg-red-800 transition-colors shadow-xs"
+              className="inline-flex items-center gap-2 rounded-md bg-red-700 px-4 py-2 text-xs font-semibold text-white hover:bg-red-800 transition-colors shadow-sm"
             >
               <AlertCircleIcon className="h-4 w-4" />
               Escalate to Security Incident Report

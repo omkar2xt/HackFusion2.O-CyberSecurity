@@ -142,7 +142,7 @@ export default function ResourcesPage() {
 
         <Link
           href="/scan"
-          className="self-start sm:self-center inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs"
+          className="self-start sm:self-center inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-sm"
         >
           <ShieldIcon className="h-3.5 w-3.5" />
           Test Threats in Scanner
@@ -167,7 +167,7 @@ export default function ResourcesPage() {
                 onClick={() => setActiveGuide(guide.id)}
                 className={`w-full text-left p-3.5 rounded-lg border transition-all ${
                   isSelected
-                    ? "border-slate-900 bg-slate-900 text-white shadow-xs"
+                    ? "border-slate-900 bg-slate-900 text-white shadow-sm"
                     : "border-slate-200 bg-white hover:border-slate-300 text-slate-900"
                 }`}
               >
@@ -203,7 +203,7 @@ export default function ResourcesPage() {
 
         {/* Detailed Guide View (8 cols) */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
             
             {/* Header */}
             <div className="border-b border-slate-200 pb-4">
@@ -267,7 +267,7 @@ export default function ResourcesPage() {
               <div className="pt-2 flex flex-wrap gap-2">
                 <Link
                   href="/report"
-                  className="rounded bg-red-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-800 transition-colors shadow-xs"
+                  className="rounded bg-red-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-800 transition-colors shadow-sm"
                 >
                   File Urgent Incident Report
                 </Link>

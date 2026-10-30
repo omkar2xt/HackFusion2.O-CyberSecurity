@@ -321,12 +321,12 @@ export const apiClient = {
     return null;
   },
 
-  // WD-03: Scanner Submission (Connected to /api/v1/scan/url, /api/v1/scan/message, and /api/v1/scan/qr + Multi-Modal Fallbacks)
+  // WD-03: Scanner Submission (Connected to FastAPI /api/v1/scan/* for all 5 modalities)
   async submitScan(payload: {
     url?: string;
     messageText?: string;
     qrPayload?: string;
-    documentMeta?: { fileName: string; fileSize?: number; fileType?: string; details?: string };
+    documentMeta?: { fileName: string; fileSize?: number; fileType?: string; details?: string; features?: Record<string, any> };
     cyberbullyingText?: string;
   }): Promise<ScanResult> {
     try {
@@ -344,11 +344,27 @@ export const apiClient = {
           headers,
           body: JSON.stringify({ url: payload.url }),
         });
-      } else if (payload.messageText || payload.cyberbullyingText) {
+      } else if (payload.documentMeta) {
+        res = await fetch(`${API_BASE}/scan/document`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            file_name: payload.documentMeta.fileName,
+            details: payload.documentMeta.details,
+            features: payload.documentMeta.features,
+          }),
+        });
+      } else if (payload.cyberbullyingText) {
+        res = await fetch(`${API_BASE}/scan/cyberbullying`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ text: payload.cyberbullyingText }),
+        });
+      } else if (payload.messageText) {
         res = await fetch(`${API_BASE}/scan/message`, {
           method: "POST",
           headers,
-          body: JSON.stringify({ message_text: payload.messageText || payload.cyberbullyingText }),
+          body: JSON.stringify({ message_text: payload.messageText }),
         });
       }
 

@@ -42,13 +42,13 @@ export function Navigation() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white shadow-xs">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white shadow-sm" style={{ backgroundColor: "#ffffff" }}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         
         {/* Brand identity */}
         <div className="flex items-center gap-6 lg:gap-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-900 text-white shadow-xs group-hover:bg-slate-800 transition-colors">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-900 text-white shadow-sm group-hover:bg-slate-800 transition-colors">
               <ShieldIcon className="h-5 w-5" />
             </div>
             <div>

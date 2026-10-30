@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
         <div className="pt-2">
           <button
             onClick={() => switchRole("security_admin")}
-            className="rounded-md bg-blue-700 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-800 transition-colors shadow-xs"
+            className="rounded-md bg-blue-700 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-800 transition-colors shadow-sm"
           >
             Switch to Security Admin Persona (Demo Mode)
           </button>
@@ -74,7 +74,7 @@ export default function AdminDashboardPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/admin/incidents"
-            className="rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs inline-flex items-center gap-2"
+            className="rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-sm inline-flex items-center gap-2"
           >
             <ShieldIcon className="h-3.5 w-3.5" />
             Open Incident Triage Queue
@@ -94,7 +94,7 @@ export default function AdminDashboardPage() {
           {/* Key Metric KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             
-            <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
+            <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Recorded Cases</p>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold text-slate-900">{metrics.totalIncidents}</span>
@@ -103,7 +103,7 @@ export default function AdminDashboardPage() {
               <p className="mt-2 text-[11px] text-slate-500">Cross-channel incident intake</p>
             </div>
 
-            <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-5 shadow-xs">
+            <div className="rounded-lg border border-amber-200 bg-amber-50/40 p-5 shadow-sm">
               <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">Pending Investigation</p>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold text-amber-900">{metrics.openIncidents}</span>
@@ -112,7 +112,7 @@ export default function AdminDashboardPage() {
               <p className="mt-2 text-[11px] text-amber-800">Requires triage review or containment</p>
             </div>
 
-            <div className="rounded-lg border border-red-200 bg-red-50/40 p-5 shadow-xs">
+            <div className="rounded-lg border border-red-200 bg-red-50/40 p-5 shadow-sm">
               <p className="text-xs font-semibold text-red-800 uppercase tracking-wider">Critical Urgency</p>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold text-red-900">{metrics.criticalPending}</span>
@@ -121,7 +121,7 @@ export default function AdminDashboardPage() {
               <p className="mt-2 text-[11px] text-red-800">Payment scams / active credentials</p>
             </div>
 
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50/40 p-5 shadow-xs">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/40 p-5 shadow-sm">
               <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wider">Resolved Cases</p>
               <div className="mt-2 flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold text-emerald-900">{metrics.resolvedIncidents}</span>
@@ -136,7 +136,7 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Severity Distribution */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                 Threat Severity Distribution
               </h2>
@@ -204,7 +204,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Category Breakdown */}
-            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-4">
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                 Threat Breakdown by Category
               </h2>
@@ -225,7 +225,7 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Recent Audit Timeline Feed */}
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                 Live SOC Audit & Case Activity

@@ -15,6 +15,10 @@ from backend.app.schemas.scan import (
     ScanResultResponse,
     ScanMessageResponse,
     ScanQrResponse,
+    ScanDocumentRequest,
+    ScanDocumentResponse,
+    ScanCyberbullyingRequest,
+    ScanCyberbullyingResponse,
 )
 from backend.app.schemas.common import (
     ScanVerdict,
@@ -83,5 +87,39 @@ async def scan_qr(
 ) -> ScanQrResponse:
     return await detection_engine.analyze_qr_payload(
         payload.decoded_content, current_user=current_user
+    )
+
+@router.post(
+    "/document",
+    response_model=ScanDocumentResponse,
+    summary="Scan Office Attachment / Document",
+    description="Evaluates Excel, Word, PDF, or HTML documents against CIC 2025 ML classifiers.",
+)
+async def scan_document(
+    payload: ScanDocumentRequest,
+    current_user: Optional[AuthenticatedUser] = Depends(get_optional_current_user),
+) -> ScanDocumentResponse:
+    return await detection_engine.analyze_document(
+        file_name=payload.file_name,
+        fmt=payload.format,
+        details=payload.details,
+        features=payload.features,
+        current_user=current_user,
+    )
+
+
+@router.post(
+    "/cyberbullying",
+    response_model=ScanCyberbullyingResponse,
+    summary="Scan Text for Harassment and Cyberbullying",
+    description="Evaluates student communication against campus community safety heuristics.",
+)
+async def scan_cyberbullying(
+    payload: ScanCyberbullyingRequest,
+    current_user: Optional[AuthenticatedUser] = Depends(get_optional_current_user),
+) -> ScanCyberbullyingResponse:
+    return await detection_engine.analyze_cyberbullying(
+        text=payload.text,
+        current_user=current_user,
     )
 

@@ -27,6 +27,8 @@ class EvidenceType(str, Enum):
     HEURISTIC = "heuristic"
     THREAT_INTELLIGENCE = "threat_intelligence"
     USER_REPORT = "user_report"
+    ML_FEATURE = "ml_feature"
+    ML_MODEL = "ml_model"
     OTHER = "other"
 
 

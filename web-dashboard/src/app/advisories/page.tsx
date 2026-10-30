@@ -182,7 +182,7 @@ export default function AdvisoriesPage() {
 
         <Link
           href="/scan"
-          className="self-start sm:self-center inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs"
+          className="self-start sm:self-center inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-sm"
         >
           <ShieldIcon className="h-3.5 w-3.5" />
           Open Threat Scanner
@@ -190,7 +190,7 @@ export default function AdvisoriesPage() {
       </div>
 
       {/* Filter and Search Toolbar */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           
           {/* Category Tabs */}
@@ -243,7 +243,7 @@ export default function AdvisoriesPage() {
             return (
               <div
                 key={adv.id}
-                className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4 hover:border-slate-300 transition-colors"
+                className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-4 hover:border-slate-300 transition-colors"
               >
                 {/* Header row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">

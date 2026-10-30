@@ -61,8 +61,17 @@ class AttachmentModelAdapter(BaseModelAdapter):
     def _initialize_all_formats(self):
         formats = ["excel", "word", "pdf", "html"]
         for fmt in formats:
-            joblib_path = self._resolve_artifact(f"{fmt}_classifier_best.joblib")
-            meta_path = self._resolve_artifact(f"{fmt}_classifier_metadata.json")
+            suffix = "top13" if fmt == "html" else "top10"
+            joblib_path = (
+                self._resolve_artifact(f"{fmt}_{suffix}_best.joblib")
+                or self._resolve_artifact(f"{fmt}_classifier_best.joblib")
+                or self._resolve_artifact(f"{fmt}_all_best.joblib")
+            )
+            meta_path = (
+                self._resolve_artifact(f"{fmt}_{suffix}_metadata.json")
+                or self._resolve_artifact(f"{fmt}_classifier_metadata.json")
+                or self._resolve_artifact(f"{fmt}_all_metadata.json")
+            )
 
             if joblib_path and meta_path and os.path.exists(joblib_path) and os.path.exists(meta_path):
                 try:

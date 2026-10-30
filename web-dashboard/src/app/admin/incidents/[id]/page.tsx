@@ -92,7 +92,7 @@ export default function IncidentDetailPage() {
         <div className="pt-2">
           <button
             onClick={() => switchRole("security_admin")}
-            className="rounded-md bg-blue-700 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-800 transition-colors shadow-xs"
+            className="rounded-md bg-blue-700 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-800 transition-colors shadow-sm"
           >
             Switch to Security Admin Persona (Demo Mode)
           </button>
@@ -143,7 +143,7 @@ export default function IncidentDetailPage() {
       </div>
 
       {/* Case Header */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -187,7 +187,7 @@ export default function IncidentDetailPage() {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Detailed Narrative */}
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-3">
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Submitted Incident Context
             </h2>
@@ -197,7 +197,7 @@ export default function IncidentDetailPage() {
           </div>
 
           {/* Evidence Vault */}
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                 Cryptographic Evidence Vault
@@ -231,7 +231,7 @@ export default function IncidentDetailPage() {
 
           {/* Linked Automated Threat Engine Scan */}
           {incident.linkedScan && (
-            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Linked Heuristic Scanner Verdict
@@ -263,7 +263,7 @@ export default function IncidentDetailPage() {
           )}
 
           {/* WD-10: Audit Action Timeline */}
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-4">
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Immutable Case Audit Trail (WD-10)
             </h2>
@@ -292,7 +292,7 @@ export default function IncidentDetailPage() {
         <div className="space-y-6">
           
           {/* Action Box */}
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-4">
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Case Operations (WD-09)
             </h2>
@@ -363,7 +363,7 @@ export default function IncidentDetailPage() {
               <button
                 type="submit"
                 disabled={updating}
-                className="w-full rounded bg-slate-900 py-2 font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-xs"
+                className="w-full rounded bg-slate-900 py-2 font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-sm"
               >
                 {updating ? "Saving Case Changes..." : "Commit Case Updates"}
               </button>
@@ -371,7 +371,7 @@ export default function IncidentDetailPage() {
           </div>
 
           {/* Internal Notes History */}
-          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm space-y-3">
             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Investigation Notes ({incident.investigationNotes.length})
             </h2>

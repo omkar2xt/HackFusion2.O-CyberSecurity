@@ -58,6 +58,10 @@ class ModelPrediction:
     def is_phishing(self) -> bool:
         return self.status == PredictionStatus.SUCCESS and self.prediction == 1
 
+    @property
+    def is_malicious(self) -> bool:
+        return self.is_phishing
+
 
 class BaseModelAdapter(ABC):
     """Abstract interface for model inference adapters."""

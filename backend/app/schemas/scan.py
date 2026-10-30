@@ -4,7 +4,7 @@ SignalSafe Campus - Scan Schema Definitions
 
 from uuid import UUID
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 from backend.app.schemas.common import (
     ScanVerdict,
@@ -68,3 +68,27 @@ class ScanQrRequest(BaseModel):
 
 class ScanQrResponse(ScanResultResponse):
     payload_type: str = Field(..., json_schema_extra={"example": "URL"})
+
+
+class ScanDocumentRequest(BaseModel):
+    file_name: str = Field(..., min_length=1, max_length=255, json_schema_extra={"example": "invoice_macro.xlsm"})
+    format: Optional[str] = Field(None, description="Explicit format: excel, word, pdf, html. Inferred from extension if omitted.")
+    details: Optional[str] = Field(None, max_length=5000, description="Optional text content, macro details, or structure metadata.")
+    features: Optional[Dict[str, Any]] = Field(None, description="Optional pre-extracted feature vector for model inference.")
+
+
+class ScanDocumentResponse(ScanResultResponse):
+    detected_format: str = Field(..., json_schema_extra={"example": "excel"})
+    confidence: float = Field(0.95, ge=0.0, le=1.0)
+    model_used: str = Field(..., json_schema_extra={"example": "RandomForestClassifier"})
+    extracted_features: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    top_risk_factors: List[str] = Field(default_factory=list)
+
+
+class ScanCyberbullyingRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=10000, json_schema_extra={"example": "Nobody likes you, get out of our study group."})
+
+
+class ScanCyberbullyingResponse(ScanResultResponse):
+    toxicity_score: float = Field(0.0, ge=0.0, le=1.0)
+    detected_categories: List[str] = Field(default_factory=list)

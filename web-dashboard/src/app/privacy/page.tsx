@@ -15,7 +15,7 @@ export default function PrivacyPolicyPage() {
         <p className="mt-1 text-xs text-slate-500">Effective Date: October 2026 • SignalSafe Campus Protocol</p>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6 text-xs text-slate-700 leading-relaxed">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6 text-xs text-slate-700 leading-relaxed">
         
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-slate-900">1. Principle of Explicit User Submission</h2>

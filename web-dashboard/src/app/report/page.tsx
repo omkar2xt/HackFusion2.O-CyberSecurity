@@ -114,7 +114,7 @@ export default function ReportPage() {
 
       {/* Success Confirmation State */}
       {submittedIncident ? (
-        <div className="rounded-lg border border-emerald-300 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="rounded-lg border border-emerald-300 bg-white p-6 sm:p-8 shadow-sm space-y-6">
           <div className="flex items-start gap-4">
             <div className="rounded-full bg-emerald-100 p-2 text-emerald-700">
               <CheckCircleIcon className="h-8 w-8" />
@@ -147,7 +147,7 @@ export default function ReportPage() {
           <div className="flex flex-wrap gap-3 pt-2">
             <Link
               href="/my-reports"
-              className="rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs"
+              className="rounded-md bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition-colors shadow-sm"
             >
               View in My Reports
             </Link>
@@ -168,7 +168,7 @@ export default function ReportPage() {
         </div>
       ) : (
         /* Incident Submission Form */
-        <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+        <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
           
           {errorMsg && (
             <div className="rounded border border-red-200 bg-red-50 p-3 text-xs text-red-800 flex items-center gap-2">
@@ -335,7 +335,7 @@ export default function ReportPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-md bg-slate-900 px-5 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-xs"
+              className="rounded-md bg-slate-900 px-5 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-sm"
             >
               {submitting ? "Submitting Incident..." : "Submit Incident Report"}
             </button>

@@ -51,7 +51,7 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto max-w-xl px-4 py-12">
-      <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
         
         {/* Header */}
         <div className="text-center space-y-2">
@@ -180,7 +180,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-xs"
+            className="w-full rounded bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-sm"
           >
             {isSubmitting ? "Authenticating..." : "Sign In to Portal"}
           </button>

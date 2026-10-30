@@ -55,7 +55,7 @@ export default function AdminIncidentQueuePage() {
         <div className="pt-2">
           <button
             onClick={() => switchRole("security_admin")}
-            className="rounded-md bg-blue-700 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-800 transition-colors shadow-xs"
+            className="rounded-md bg-blue-700 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-800 transition-colors shadow-sm"
           >
             Switch to Security Admin Persona (Demo Mode)
           </button>
@@ -91,7 +91,7 @@ export default function AdminIncidentQueuePage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs space-y-3">
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm space-y-3">
         <div className="flex flex-col sm:flex-row gap-3">
           
           {/* Search bar */}
@@ -155,14 +155,14 @@ export default function AdminIncidentQueuePage() {
       {loading ? (
         <SkeletonTable rows={4} />
       ) : incidents.length === 0 ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-12 text-center shadow-xs space-y-3">
+        <div className="rounded-lg border border-slate-200 bg-white p-12 text-center shadow-sm space-y-3">
           <p className="font-semibold text-slate-900 text-sm">No Incidents Found</p>
           <p className="text-xs text-slate-500">
             No incidents matched your query. Try resetting filters.
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-xs">
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50/70 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
