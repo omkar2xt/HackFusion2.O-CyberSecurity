@@ -52,3 +52,22 @@ htmlcov/
 
 # Logs
 *.log
+
+# Data and ML artifacts (Milestone 2)
+data/*
+!data/README.md
+!data/scripts/
+*.csv
+*.tsv
+*.zip
+*.tar.gz
+*.parquet
+*.pkl
+*.joblib
+*.onnx
+*.pt
+*.pth
+models/*.onnx
+models/*.pkl
+models/*.joblib
+
