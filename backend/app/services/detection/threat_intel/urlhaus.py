@@ -30,6 +30,17 @@ class URLhausProvider(BaseThreatIntelProvider):
     async def check_url(self, url: str) -> ThreatIntelResult:
         start_time = time.perf_counter()
 
+        if os.environ.get("DISABLE_EXTERNAL_TI", "false").lower() == "true" or os.environ.get("OFFLINE_MODE", "false").lower() == "true":
+            return ThreatIntelResult(
+                provider_name=self.provider_name,
+                target_url=url,
+                status=ThreatIntelStatus.UNAVAILABLE,
+                is_malicious=False,
+                confidence=0.0,
+                details="External threat intelligence disabled in offline/sandbox mode.",
+                query_latency_ms=0.0,
+            )
+
         if is_ssrf_risk_or_internal(url):
             return ThreatIntelResult(
                 provider_name=self.provider_name,

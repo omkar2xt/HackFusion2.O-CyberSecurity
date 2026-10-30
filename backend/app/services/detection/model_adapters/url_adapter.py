@@ -49,6 +49,22 @@ class URLModelAdapter(BaseModelAdapter):
 
     def _initialize_adapter(self) -> ModelMetadata:
         """Attempts to load a verified ONNX or joblib model artifact, falling back to mock."""
+        candidates = [
+            self.model_path,
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "detection", "url_classifier_best.joblib")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "detection", "url_classifier_best.onnx")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "detection", "url_classifier_best.joblib")),
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "detection", "url_classifier_best.onnx")),
+            os.path.join("SignalSafe_Campus", "models", "production", "url_classifier_best.joblib"),
+            os.path.join("SignalSafe_Campus", "models", "production", "url_classifier_best.onnx"),
+        ]
+        resolved_path = None
+        for cand in candidates:
+            if cand and os.path.exists(cand):
+                resolved_path = cand
+                break
+        self.model_path = resolved_path or self.model_path
+
         if self.model_path and os.path.exists(self.model_path):
             try:
                 # 1. Verify Checksum if provided
