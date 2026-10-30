@@ -51,7 +51,7 @@ def create_application() -> FastAPI:
     # Production deployment MUST specify the exact extension ID in CORS_ORIGINS
     # (e.g. `chrome-extension://<verified_extension_id>`) and disable wildcard regex.
     origin_regex = (
-        r"^(chrome-extension://.*|http://localhost:\d+|http://127\.0\.0\.1:\d+)$"
+        r"^(chrome-extension://.*|http://localhost(:\d+)?|http://127\.0\.0\.1(:\d+)?)$"
         if (settings.ALLOW_BROWSER_EXTENSIONS and settings.ENVIRONMENT != "production")
         else None
     )
@@ -63,6 +63,7 @@ def create_application() -> FastAPI:
         allow_credentials=True,
         allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
+        expose_headers=["X-Request-ID"],
     )
 
     # 3. Standardized Exception Handlers

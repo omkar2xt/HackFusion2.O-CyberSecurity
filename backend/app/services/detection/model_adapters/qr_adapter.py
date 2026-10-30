@@ -13,7 +13,10 @@ import os
 import time
 from typing import Any, Optional
 
-from PIL import Image
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 
 from backend.app.services.detection.model_adapters.base import (
     BaseModelAdapter,
