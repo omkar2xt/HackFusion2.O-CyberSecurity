@@ -2,10 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ChevronRightIcon, ScanIcon, AlertCircleIcon, ShieldIcon, CheckCircleIcon, LockIcon } from "../components/Icons";
-
-const MITHA_PORTRAIT =
-  "https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260728_050334_5b076e26-0ce7-4898-b432-d764190e448f.png&w=1280&q=85";
+import { ShieldIcon, ScanIcon, AlertCircleIcon, LockIcon, ExternalLinkIcon, CheckCircleIcon } from "../components/Icons";
 
 export default function HomePage() {
   const [activeAdvisory] = useState({
@@ -17,363 +14,170 @@ export default function HomePage() {
   });
 
   return (
-    <div className="relative w-full">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       
-      {/* SECTION ONE — HERO */}
-      <section className="min-h-screen supports-[height:100svh]:min-h-[100svh] flex flex-col justify-between px-5 sm:px-8 md:px-12 pt-24 sm:pt-28 pb-12 md:pb-16 max-w-7xl mx-auto">
-        
-        {/* Top Row */}
-        <div className="flex flex-col gap-8 sm:flex-row justify-between items-start">
-          {/* Left — service list */}
-          <div className="flex flex-col gap-2">
-            <span className="font-mono text-xs uppercase tracking-[0.15em] text-white/90 drop-shadow-md">
-              / THREAT RECOGNITION
-            </span>
-            <span className="font-mono text-xs uppercase tracking-[0.15em] text-white/90 drop-shadow-md">
-              / AI PHISHING DETECTION
-            </span>
-            <span className="font-mono text-xs uppercase tracking-[0.15em] text-white/90 drop-shadow-md">
-              / INCIDENT TRIAGE & FORENSICS
-            </span>
-          </div>
-
-          {/* Right — intro */}
-          <div className="max-w-xs sm:text-right">
-            <p className="text-lg sm:text-xl leading-relaxed text-white drop-shadow-md font-normal">
-              We design intelligence that brings clarity, precision, and efficiency to the way your campus community operates.
-            </p>
-          </div>
-        </div>
-
-        {/* Bottom Row */}
-        <div className="flex flex-col gap-8 md:flex-row items-end justify-between mt-16 sm:mt-24">
-          {/* Left Title Area */}
-          <div className="max-w-2xl">
-            {/* Left-accent badge */}
-            <div className="inline-block border-l-2 border-white bg-white/15 px-3 py-1.5 backdrop-blur-md mb-5">
-              <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-white/90">
-                Securing 100+ Campus Platforms
-              </span>
-            </div>
-
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-normal leading-[1.05] tracking-tight text-white drop-shadow-lg">
-              Clear. Precise. <br />
-              Automated.
-            </h1>
-          </div>
-
-          {/* Right — Glass Contact Card */}
-          <div className="flex items-center gap-4 rounded-xl border border-white/20 bg-white/15 p-3 backdrop-blur-md shadow-2xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={MITHA_PORTRAIT}
-              alt="Mitha, co-founder of NovaAI"
-              className="h-24 w-20 rounded-lg object-cover"
-            />
-            <div className="flex flex-col gap-1.5 pr-2">
-              <span className="text-sm font-medium text-white drop-shadow-sm">Talk with Mitha</span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/60">
-                Co-founder of NovaAI
-              </span>
-              <Link
-                href="/scan"
-                className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-medium text-black hover:bg-white/85 transition-colors mt-1.5 shadow-sm"
-              >
-                <span>Launch Scanner</span>
-                <ChevronRightIcon className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-      {/* MID SPACER — Crucial for scroll video scrub length */}
-      <div className="h-[80vh]" aria-hidden="true" />
-
-      {/* SECTION TWO — CAPABILITY */}
-      <section className="min-h-screen supports-[height:100svh]:min-h-[100svh] flex flex-col justify-between px-5 sm:px-8 md:px-12 pt-24 sm:pt-28 pb-12 md:pb-16 max-w-7xl mx-auto">
-        
-        {/* Top Row */}
-        <div className="flex flex-col gap-8 sm:flex-row justify-between items-start">
-          <div className="inline-block border-l-2 border-white bg-white/15 px-3 py-1.5 backdrop-blur-md">
-            <span className="font-mono text-[11px] uppercase tracking-[0.15em] text-white/90">
-              Insight On Demand
-            </span>
-          </div>
-
-          <div className="max-w-sm sm:text-right">
-            <p className="text-lg sm:text-xl leading-relaxed text-white drop-shadow-md font-normal">
-              Our AI doesn&apos;t just respond — it interprets, sharpens, and delivers the signal you need.
-            </p>
-          </div>
-        </div>
-
-        {/* Bottom Area */}
-        <div className="flex-1 flex flex-col justify-end mt-16 sm:mt-24">
-          <div className="flex flex-col gap-12 md:flex-row items-end justify-between gap-16">
-            
-            {/* Left Column */}
-            <div className="max-w-xl">
-              <h2 className="text-5xl sm:text-6xl lg:text-7xl font-normal leading-[1.05] tracking-tight text-white drop-shadow-lg">
-                Learn to see <br />
-                brilliantly.
-              </h2>
-              <p className="mt-6 max-w-md text-sm sm:text-base text-white/80 drop-shadow-md leading-relaxed">
-                From the first suspicious URL to the final forensic render, SignalSafe turns raw intent into decisions your campus team can act on — quietly, precisely, at speed.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/scan"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2.5 text-xs sm:text-sm font-medium text-black hover:bg-white/85 transition-colors shadow-sm"
-                >
-                  <span>Run the scanner</span>
-                  <ChevronRightIcon className="h-3.5 w-3.5" />
-                </Link>
-                <Link
-                  href="/report"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 backdrop-blur-md px-5 py-2.5 text-xs sm:text-sm text-white hover:bg-white/20 transition-colors"
-                >
-                  <span>Report incident</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Right — Frosted Capability Panel */}
-            <div className="w-full max-w-md rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md px-5 sm:px-6 shadow-2xl">
-              
-              <div className="flex gap-5 py-5 border-b border-white/15 group">
-                <span className="font-mono text-[11px] tracking-[0.15em] text-white/55">01</span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-base sm:text-lg font-medium text-white">Real-time vision</span>
-                    <ChevronRightIcon className="h-4 w-4 text-white/40 group-hover:translate-x-0.5 group-hover:text-white transition-all" />
-                  </div>
-                  <p className="mt-1.5 text-sm leading-relaxed text-white/70">
-                    Reads context as it happens and surfaces threat vectors before users can interact.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-5 py-5 border-b border-white/15 group">
-                <span className="font-mono text-[11px] tracking-[0.15em] text-white/55">02</span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-base sm:text-lg font-medium text-white">Layered insight</span>
-                    <ChevronRightIcon className="h-4 w-4 text-white/40 group-hover:translate-x-0.5 group-hover:text-white transition-all" />
-                  </div>
-                  <p className="mt-1.5 text-sm leading-relaxed text-white/70">
-                    Moves from rough domain heuristics to sharp forensic output with tamper-proof evidence.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-5 py-5 group">
-                <span className="font-mono text-[11px] tracking-[0.15em] text-white/55">03</span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-base sm:text-lg font-medium text-white">Adaptive speed</span>
-                    <ChevronRightIcon className="h-4 w-4 text-white/40 group-hover:translate-x-0.5 group-hover:text-white transition-all" />
-                  </div>
-                  <p className="mt-1.5 text-sm leading-relaxed text-white/70">
-                    Automates incident triage velocity and tightens campus response times across every department.
-                  </p>
-                </div>
-              </div>
-
-            </div>
-
-          </div>
-        </div>
-
-      </section>
-
-      {/* SECTION THREE — LIVE CAMPUS SECURITY HUB */}
-      <section className="px-5 sm:px-8 md:px-12 py-16 max-w-7xl mx-auto space-y-8">
-        
-        {/* Active Advisory Banner in Frosted Glass */}
-        <div className="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-5 backdrop-blur-md shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3.5">
-            <div className="mt-0.5 rounded-full bg-amber-400/20 p-1.5 text-amber-300">
-              <AlertCircleIcon className="h-5 w-5" />
+      {/* High Priority Active Campus Advisory Banner */}
+      <div className="rounded-lg border border-amber-300 bg-amber-50/70 p-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 rounded-full bg-amber-200/80 p-1 text-amber-900">
+              <AlertCircleIcon className="h-4 w-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-white text-sm">{activeAdvisory.title}</span>
-                <span className="rounded bg-amber-400/20 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-300 tracking-wider uppercase border border-amber-400/30">
+                <span className="font-semibold text-amber-950 text-sm">{activeAdvisory.title}</span>
+                <span className="rounded bg-amber-200 px-1.5 py-0.5 text-[10px] font-bold text-amber-900 tracking-wider">
                   ACTIVE
                 </span>
               </div>
-              <p className="mt-1 text-xs text-white/70 leading-relaxed max-w-2xl">{activeAdvisory.summary}</p>
+              <p className="mt-1 text-xs text-amber-900/90 leading-relaxed">{activeAdvisory.summary}</p>
             </div>
           </div>
           <Link
             href="/scan"
-            className="self-start sm:self-center shrink-0 rounded-full border border-amber-400/40 bg-amber-400/10 px-4 py-2 font-mono text-xs uppercase tracking-[0.1em] text-amber-200 hover:bg-amber-400/20 transition-colors"
+            className="self-start sm:self-center shrink-0 rounded border border-amber-400 bg-white px-3 py-1.5 text-xs font-semibold text-amber-950 hover:bg-amber-100/60 transition-colors"
           >
             Scan Suspicious Link
           </Link>
         </div>
+      </div>
 
-        {/* 3-Step Campus Defense in Frosted Glass */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          <div className="rounded-2xl border border-white/15 bg-white/10 p-6 backdrop-blur-md shadow-xl flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 bg-white/15 text-white">
-                <ScanIcon className="h-5 w-5" />
-              </div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/60">Step 01</span>
-              <h3 className="font-medium text-white text-lg">Recognize</h3>
-              <p className="text-xs text-white/70 leading-relaxed">
-                Submit suspicious links, email headers, SMS text, or QR destinations to detect domain age, typosquatting, and payment coercion patterns.
-              </p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <Link href="/scan" className="text-xs font-mono uppercase tracking-[0.15em] text-white hover:text-white/80 inline-flex items-center gap-1">
-                Open Scanner <ChevronRightIcon className="h-3 w-3" />
-              </Link>
-            </div>
+      {/* Hero & Executive Summary */}
+      <div className="border-b border-slate-200 pb-10">
+        <div className="max-w-3xl space-y-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 shadow-2xs">
+            <ShieldIcon className="h-3.5 w-3.5 text-slate-800" />
+            <span>Campus Digital Threat Protection Protocol</span>
           </div>
 
-          <div className="rounded-2xl border border-white/15 bg-white/10 p-6 backdrop-blur-md shadow-xl flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 bg-white/15 text-white">
-                <ShieldIcon className="h-5 w-5" />
-              </div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/60">Step 02</span>
-              <h3 className="font-medium text-white text-lg">Resist</h3>
-              <p className="text-xs text-white/70 leading-relaxed">
-                Receive plain-language explainability breakdowns. Learn exactly why a destination is untrusted and get clear safety directives before taking action.
-              </p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <span className="text-xs font-mono uppercase tracking-[0.15em] text-white/50">Contextual Defense</span>
-            </div>
-          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
+            Recognize, Resist, and Report Digital Threats Before They Cause Harm
+          </h1>
 
-          <div className="rounded-2xl border border-white/15 bg-white/10 p-6 backdrop-blur-md shadow-xl flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 bg-white/15 text-white">
-                <AlertCircleIcon className="h-5 w-5" />
-              </div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/60">Step 03</span>
-              <h3 className="font-medium text-white text-lg">Report</h3>
-              <p className="text-xs text-white/70 leading-relaxed">
-                Securely escalate threats to the Campus Incident Response Team (CIRT). Preserve digital evidence, attach screenshots, or submit sensitive reports anonymously.
-              </p>
-            </div>
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <Link href="/report" className="text-xs font-mono uppercase tracking-[0.15em] text-white hover:text-white/80 inline-flex items-center gap-1">
-                File a Report <ChevronRightIcon className="h-3 w-3" />
-              </Link>
-            </div>
-          </div>
+          <p className="text-base text-slate-600 leading-relaxed">
+            SignalSafe Campus provides instant detection for phishing emails, malicious portals,
+            fraudulent QR payment codes, and social engineering targeting university students,
+            faculty, and staff.
+          </p>
 
-        </div>
-
-        {/* Guarantees bar */}
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm flex flex-col sm:flex-row items-center justify-between text-xs text-white/60 gap-3">
-          <div className="flex items-center gap-2">
-            <CheckCircleIcon className="h-4 w-4 text-emerald-400" />
-            <span>Strict privacy: No background browser history or private chat monitoring.</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <LockIcon className="h-4 w-4 text-white/60" />
-            <span>Tamper-proof SHA-256 evidence hashing on report submission.</span>
-          </div>
-        </div>
-
-        {/* Complete Campus Platform Directory */}
-        <div className="rounded-2xl border border-white/15 bg-white/10 p-6 sm:p-8 backdrop-blur-md shadow-2xl mt-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/15 pb-4 mb-6">
-            <div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-white/60">
-                Quick Platform Access
-              </span>
-              <h4 className="text-lg font-normal text-white mt-0.5">Explore All Pages & Workflows</h4>
-            </div>
-            <span className="font-mono text-[10px] text-white/40 uppercase tracking-wider mt-2 sm:mt-0">
-              SignalSafe v1.0.0 Architecture
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="pt-2 flex flex-wrap gap-3">
             <Link
               href="/scan"
-              className="p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 hover:border-white/25 transition-all group"
+              className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors shadow-xs"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-xs uppercase tracking-wider text-white font-semibold">
-                  Threat Scanner
-                </span>
-                <ChevronRightIcon className="h-3.5 w-3.5 text-white/40 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <p className="text-[11px] text-white/70">
-                URL inspector, coercive SMS/message analyzer, and QR / quishing decoder.
-              </p>
-              <span className="inline-block mt-3 font-mono text-[9px] uppercase px-2 py-0.5 rounded-full bg-white/10 text-white/80">
-                /scan
-              </span>
+              <ScanIcon className="h-4 w-4" />
+              Analyze Suspicious URL / Message
             </Link>
 
             <Link
               href="/report"
-              className="p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 hover:border-white/25 transition-all group"
+              className="inline-flex items-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50 transition-colors shadow-xs"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-xs uppercase tracking-wider text-white font-semibold">
-                  Report Incident
-                </span>
-                <ChevronRightIcon className="h-3.5 w-3.5 text-white/40 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <p className="text-[11px] text-white/70">
-                Submit suspicious links, fake payment VPAs, or credential harvesting campaigns.
-              </p>
-              <span className="inline-block mt-3 font-mono text-[9px] uppercase px-2 py-0.5 rounded-full bg-white/10 text-white/80">
-                /report
-              </span>
-            </Link>
-
-            <Link
-              href="/admin"
-              className="p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 hover:border-white/25 transition-all group"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-xs uppercase tracking-wider text-white font-semibold">
-                  SOC Console
-                </span>
-                <ChevronRightIcon className="h-3.5 w-3.5 text-white/40 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <p className="text-[11px] text-white/70">
-                Campus-wide threat metrics, triage velocity, and hybrid detection rules catalog.
-              </p>
-              <span className="inline-block mt-3 font-mono text-[9px] uppercase px-2 py-0.5 rounded-full bg-white/10 text-white/80">
-                /admin
-              </span>
-            </Link>
-
-            <Link
-              href="/admin/incidents"
-              className="p-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 hover:border-white/25 transition-all group"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-mono text-xs uppercase tracking-wider text-white font-semibold">
-                  Incident Queue
-                </span>
-                <ChevronRightIcon className="h-3.5 w-3.5 text-white/40 group-hover:translate-x-1 transition-transform" />
-              </div>
-              <p className="text-[11px] text-white/70">
-                Security operations queue to filter, assign, triage, and close reported threats.
-              </p>
-              <span className="inline-block mt-3 font-mono text-[9px] uppercase px-2 py-0.5 rounded-full bg-white/10 text-white/80">
-                /admin/incidents
-              </span>
+              <AlertCircleIcon className="h-4 w-4 text-slate-600" />
+              File Security Incident Report
             </Link>
           </div>
         </div>
+      </div>
 
-      </section>
+      {/* The 3 Core Pillars */}
+      <div>
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-slate-900">The 3-Step Campus Defense Model</h2>
+          <p className="text-xs text-slate-500">How SignalSafe protects the academic community at every stage of an encounter.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-slate-900 border border-slate-200">
+                <ScanIcon className="h-5 w-5" />
+              </div>
+              <h3 className="font-semibold text-slate-900 text-base">1. Recognize</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Submit suspicious links, email headers, SMS text, or QR codes. The detection engine extracts threat indicators, domain age, typosquatting, and payment coercion patterns.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-slate-100">
+              <Link href="/scan" className="text-xs font-semibold text-slate-900 hover:underline inline-flex items-center gap-1">
+                Open Scanner <ExternalLinkIcon className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-slate-900 border border-slate-200">
+                <ShieldIcon className="h-5 w-5" />
+              </div>
+              <h3 className="font-semibold text-slate-900 text-base">2. Resist</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Receive plain-language explainability breakdowns. Learn exactly why a request is untrusted, inspect risk confidence scores, and get clear safety directives before taking action.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-slate-100">
+              <span className="text-xs font-medium text-slate-500">Real-time contextual coaching</span>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-slate-900 border border-slate-200">
+                <AlertCircleIcon className="h-5 w-5" />
+              </div>
+              <h3 className="font-semibold text-slate-900 text-base">3. Report</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Securely escalate threats to the Campus Incident Response Team (CIRT). Preserve digital evidence, attach screenshots, or submit sensitive reports anonymously.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-slate-100">
+              <Link href="/report" className="text-xs font-semibold text-slate-900 hover:underline inline-flex items-center gap-1">
+                File a Report <ExternalLinkIcon className="h-3 w-3" />
+              </Link>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Real Threat Matrix Section */}
+      <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">Monitored Threat Vectors Across Campus</h2>
+          <p className="text-xs text-slate-500">Categories prioritized by campus security operations.</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="border border-slate-200 rounded p-4 bg-slate-50/50">
+            <p className="font-semibold text-slate-900 text-sm">Credential Harvesting</p>
+            <p className="text-xs text-slate-600 mt-1">Cloned portals imitating campus Single Sign-On (SSO), LMS, or grading portals.</p>
+          </div>
+          <div className="border border-slate-200 rounded p-4 bg-slate-50/50">
+            <p className="font-semibold text-slate-900 text-sm">Payment & QR Tampering</p>
+            <p className="text-xs text-slate-600 mt-1">Tampered cafeteria UPI QR codes, fake examination fee payment demands, and bogus stipends.</p>
+          </div>
+          <div className="border border-slate-200 rounded p-4 bg-slate-50/50">
+            <p className="font-semibold text-slate-900 text-sm">Faculty Impersonation</p>
+            <p className="text-xs text-slate-600 mt-1">Spoofed emails from Deans or Professors requesting urgent gift cards or emergency transfers.</p>
+          </div>
+          <div className="border border-slate-200 rounded p-4 bg-slate-50/50">
+            <p className="font-semibold text-slate-900 text-sm">Harassment & Bullying</p>
+            <p className="text-xs text-slate-600 mt-1">Hostile communications with dedicated anonymous reporting and encrypted evidence preservation.</p>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2">
+          <div className="flex items-center gap-2">
+            <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+            <span>Strict privacy: No background browser history or private chat monitoring.</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <LockIcon className="h-4 w-4 text-slate-600" />
+            <span>Tamper-proof evidence hashing on report submission.</span>
+          </div>
+        </div>
+      </div>
 
     </div>
   );

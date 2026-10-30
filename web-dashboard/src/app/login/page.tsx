@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../lib/auth-context";
-import { AlertCircleIcon, HexagonIcon } from "../../components/Icons";
+import { LockIcon, AlertCircleIcon } from "../../components/Icons";
 import { UserRole } from "../../lib/types";
 
 export default function LoginPage() {
@@ -50,72 +50,70 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-xl px-5 py-16">
-      <div className="rounded-2xl border border-white/15 bg-white/10 p-6 sm:p-8 backdrop-blur-md shadow-2xl space-y-6 text-white">
+    <div className="mx-auto max-w-xl px-4 py-12">
+      <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6">
         
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white shadow-xl">
-            <HexagonIcon className="h-7 w-7" strokeWidth={1.5} />
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-slate-900 text-white">
+            <LockIcon className="h-6 w-6" />
           </div>
-          <h1 className="text-2xl font-normal text-white">Sign in to SignalSafe Campus</h1>
-          <p className="text-xs text-white/60">
+          <h1 className="text-2xl font-bold text-slate-900">Sign in to SignalSafe Campus</h1>
+          <p className="text-xs text-slate-500">
             Authenticate using your campus email to scan links or access security operations.
           </p>
         </div>
 
         {isAuthenticated && (
-          <div className="rounded-xl border border-white/20 bg-white/10 p-4 flex items-center justify-between text-xs">
+          <div className="rounded border border-blue-200 bg-blue-50/70 p-3 flex items-center justify-between text-xs text-blue-900">
             <div>
-              <p className="font-mono text-xs uppercase tracking-wide font-semibold text-white">
-                Active Session: {role?.toUpperCase()}
-              </p>
-              <p className="font-mono text-[10px] text-white/50">Authenticated via SSO</p>
+              <p className="font-semibold">Currently signed in as: {role?.toUpperCase()}</p>
+              <p className="text-[11px] text-blue-700">You already have an active session.</p>
             </div>
             <button
               onClick={logout}
-              className="rounded-full border border-white/25 bg-white/10 px-3.5 py-1 text-xs font-mono uppercase tracking-[0.1em] text-white hover:bg-white/20"
+              className="px-2.5 py-1 bg-white border border-blue-300 rounded font-semibold text-blue-800 hover:bg-blue-100/50"
             >
               Sign Out
             </button>
           </div>
         )}
 
-        {/* Quick Demo Personas */}
-        <div className="border-t border-b border-white/10 py-5 space-y-3">
-          <p className="font-mono text-[10px] font-semibold text-white/50 uppercase tracking-[0.15em] text-center">
-            One-Click Persona Evaluation
+        {/* Quick Demo Personas - Perfect for Hackathon Testing */}
+        <div className="border-t border-b border-slate-100 py-4 space-y-3">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-center">
+            One-Click Evaluation Personas
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             
             <button
               type="button"
               onClick={() => handleQuickDemoLogin("student", "a.sharma@campus.edu")}
-              className="rounded-xl border border-white/15 bg-white/5 p-3 text-left hover:bg-white/15 transition-colors"
+              className="border border-slate-200 hover:border-slate-400 bg-slate-50/50 p-2.5 rounded text-left transition-colors"
             >
-              <p className="font-medium text-xs text-white">Student</p>
-              <p className="font-mono text-[10px] text-white/50 truncate">a.sharma@campus.edu</p>
-              <span className="inline-block mt-1 font-mono text-[9px] uppercase tracking-wider text-white/60">Scanner & Reports</span>
+              <p className="font-semibold text-xs text-slate-900">Student</p>
+              <p className="text-[11px] text-slate-500 truncate">a.sharma@campus.edu</p>
+              <span className="inline-block mt-1 text-[10px] text-slate-500 font-medium">Scanner & My Reports</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleQuickDemoLogin("faculty", "k.ramanathan@campus.edu")}
-              className="rounded-xl border border-white/15 bg-white/5 p-3 text-left hover:bg-white/15 transition-colors"
+              className="border border-slate-200 hover:border-slate-400 bg-slate-50/50 p-2.5 rounded text-left transition-colors"
             >
-              <p className="font-medium text-xs text-white">Faculty</p>
-              <p className="font-mono text-[10px] text-white/50 truncate">k.ramanathan@campus.edu</p>
-              <span className="inline-block mt-1 font-mono text-[9px] uppercase tracking-wider text-white/60">Faculty Member</span>
+              <p className="font-semibold text-xs text-slate-900">Faculty</p>
+              <p className="text-[11px] text-slate-500 truncate">k.ramanathan@campus.edu</p>
+              <span className="inline-block mt-1 text-[10px] text-slate-500 font-medium">Faculty Member</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleQuickDemoLogin("security_admin", "v.sen@campus.edu")}
-              className="rounded-xl border border-white/30 bg-white/15 p-3 text-left hover:bg-white/25 transition-colors"
+              className="border border-blue-200 hover:border-blue-400 bg-blue-50/40 p-2.5 rounded text-left transition-colors"
             >
-              <p className="font-medium text-xs text-white">Security Admin</p>
-              <p className="font-mono text-[10px] text-white/50 truncate">v.sen@campus.edu</p>
-              <span className="inline-block mt-1 font-mono text-[9px] uppercase tracking-wider text-white">Full SOC Console</span>
+              <p className="font-semibold text-xs text-blue-900">Security Admin</p>
+              <p className="text-[11px] text-blue-700 truncate">v.sen@campus.edu</p>
+              <span className="inline-block mt-1 text-[10px] text-blue-600 font-medium">Full SOC Operations</span>
             </button>
 
           </div>
@@ -124,14 +122,14 @@ export default function LoginPage() {
         {/* Manual Form */}
         <form onSubmit={handleCustomLogin} className="space-y-4">
           {errorMsg && (
-            <div className="rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-xs text-red-200 flex items-center gap-2">
-              <AlertCircleIcon className="h-4 w-4 shrink-0 text-red-400" />
+            <div className="rounded border border-red-200 bg-red-50 p-2.5 text-xs text-red-800 flex items-center gap-2">
+              <AlertCircleIcon className="h-4 w-4 shrink-0 text-red-600" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           <div>
-            <label className="block font-mono text-[10px] uppercase tracking-[0.15em] text-white/70 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
               Campus Email Address
             </label>
             <input
@@ -140,12 +138,12 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="username@campus.edu"
               required
-              className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-xs text-white placeholder:text-white/40 focus:border-white focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
             />
           </div>
 
           <div>
-            <label className="block font-mono text-[10px] uppercase tracking-[0.15em] text-white/70 mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
               Password / Token
             </label>
             <input
@@ -153,13 +151,13 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-xs text-white placeholder:text-white/40 focus:border-white focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
             />
           </div>
 
           <div>
-            <label className="block font-mono text-[10px] uppercase tracking-[0.15em] text-white/70 mb-1.5">
-              Role Assignment
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Select Role Assignment
             </label>
             <div className="grid grid-cols-3 gap-2">
               {(["student", "faculty", "security_admin"] as UserRole[]).map((r) => (
@@ -167,13 +165,13 @@ export default function LoginPage() {
                   key={r}
                   type="button"
                   onClick={() => setSelectedRole(r)}
-                  className={`py-2 px-2 rounded-lg text-xs font-mono uppercase tracking-[0.1em] border text-center transition-colors ${
+                  className={`py-1.5 px-2 rounded text-xs font-medium border text-center capitalize transition-colors ${
                     selectedRole === r
-                      ? "border-white bg-white text-black font-bold"
-                      : "border-white/15 bg-white/5 text-white/70 hover:bg-white/10"
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  {r === "security_admin" ? "Admin" : r}
+                  {r === "security_admin" ? "Security Admin" : r}
                 </button>
               ))}
             </div>
@@ -182,15 +180,16 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-full bg-white py-3 text-xs font-medium text-black hover:bg-white/85 disabled:bg-white/40 transition-colors shadow-lg mt-2"
+            className="w-full rounded bg-slate-900 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-xs"
           >
             {isSubmitting ? "Authenticating..." : "Sign In to Portal"}
           </button>
         </form>
 
-        <div className="border-t border-white/10 pt-4 text-center">
-          <p className="font-mono text-[10px] text-white/40 uppercase tracking-wide">
-            Protected by Campus SSO • Never share your password or OTP.
+        {/* Security notice */}
+        <div className="border-t border-slate-100 pt-4 text-center">
+          <p className="text-[11px] text-slate-500">
+            Protected by Campus Identity SSO • Never share your password or OTP with anyone.
           </p>
         </div>
 
