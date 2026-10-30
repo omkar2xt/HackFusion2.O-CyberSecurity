@@ -21,11 +21,21 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-3">Threat Response</h4>
+            <h4 className="font-semibold text-slate-900 text-xs uppercase tracking-wider mb-3">Threat Defense</h4>
             <ul className="space-y-2">
               <li>
                 <Link href="/scan" className="hover:text-slate-900 transition-colors">
-                  Phishing & URL Scanner
+                  Multi-Modal Threat Scanner
+                </Link>
+              </li>
+              <li>
+                <Link href="/advisories" className="hover:text-slate-900 transition-colors">
+                  Campus Threat Advisories
+                </Link>
+              </li>
+              <li>
+                <Link href="/resources" className="hover:text-slate-900 transition-colors">
+                  Security Defense Guidelines
                 </Link>
               </li>
               <li>
@@ -35,12 +45,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/my-reports" className="hover:text-slate-900 transition-colors">
-                  Check Incident Status
-                </Link>
-              </li>
-              <li>
-                <Link href="/admin" className="hover:text-slate-900 transition-colors">
-                  SOC Admin Portal
+                  Case Status Tracking
                 </Link>
               </li>
             </ul>
@@ -64,6 +69,11 @@ export function Footer() {
               </li>
               <li>
                 <span className="text-slate-500">Zero Background Surveillance</span>
+              </li>
+              <li>
+                <Link href="/admin" className="hover:text-slate-900 transition-colors">
+                  SOC Admin Portal
+                </Link>
               </li>
             </ul>
           </div>

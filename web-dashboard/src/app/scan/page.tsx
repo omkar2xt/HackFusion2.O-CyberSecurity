@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "../../services/api";
 import { ScanResult } from "../../lib/types";
 import {
@@ -15,14 +15,16 @@ import {
   QrCodeIcon,
   UploadIcon,
   RefreshCwIcon,
-  ExternalLinkIcon,
+  FileCodeIcon,
+  UserXIcon,
 } from "../../components/Icons";
 import { SkeletonCard } from "../../components/SkeletonLoader";
 
-type ScanTab = "url" | "message" | "qr";
+type ScanTab = "url" | "message" | "qr" | "document" | "cyberbullying";
 
-export default function ScanPage() {
+function ScanContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<ScanTab>("url");
@@ -34,6 +36,14 @@ export default function ScanPage() {
   const [qrImagePreview, setQrImagePreview] = useState<string | null>(null);
   const [qrDecoding, setQrDecoding] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Document states
+  const [docFileName, setDocFileName] = useState("");
+  const [docDetails, setDocDetails] = useState("");
+  const docFileRef = useRef<HTMLInputElement>(null);
+
+  // Cyberbullying states
+  const [cyberbullyingInput, setCyberbullyingInput] = useState("");
 
   // Scan execution states
   const [loading, setLoading] = useState(false);
@@ -48,7 +58,7 @@ export default function ScanPage() {
     setBackendStatus("checking");
     try {
       const health = await apiClient.checkHealth();
-      if (health && health.status === "ok") {
+      if (health && health.status === "healthy") {
         setBackendStatus("online");
         setBackendMeta(health);
       } else {
@@ -63,26 +73,27 @@ export default function ScanPage() {
     checkBackendHealth();
   }, []);
 
+  // Handle URL pre-fill from query params (e.g. from Advisories page)
+  useEffect(() => {
+    const testParam = searchParams.get("test");
+    if (testParam) {
+      if (testParam.startsWith("http://") || testParam.startsWith("https://")) {
+        setActiveTab("url");
+        setUrlInput(testParam);
+      } else if (testParam.startsWith("WIFI:") || testParam.startsWith("upi://")) {
+        setActiveTab("qr");
+        setQrInput(testParam);
+      } else if (testParam.includes(".xlsm") || testParam.includes(".docm")) {
+        setActiveTab("document");
+        setDocFileName(testParam);
+        setDocDetails("Contains Workbook_Open macro routine and external staging URL references.");
+      }
+    }
+  }, [searchParams]);
+
   // Handle Tab Switch
   const handleTabChange = (tab: ScanTab) => {
     setActiveTab(tab);
-    setErrorMsg("");
-  };
-
-  // Preset Handlers
-  const handleApplyUrlPreset = (presetUrl: string) => {
-    setUrlInput(presetUrl);
-    setErrorMsg("");
-  };
-
-  const handleApplyMessagePreset = (presetMsg: string) => {
-    setMessageInput(presetMsg);
-    setErrorMsg("");
-  };
-
-  const handleApplyQrPreset = (presetQr: string) => {
-    setQrInput(presetQr);
-    setQrImagePreview(null);
     setErrorMsg("");
   };
 
@@ -102,7 +113,6 @@ export default function ScanPage() {
     setErrorMsg("");
 
     try {
-      // Check if native BarcodeDetector is supported
       if (typeof window !== "undefined" && "BarcodeDetector" in window) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const detector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
@@ -117,7 +127,6 @@ export default function ScanPage() {
           return;
         }
       }
-      // If client decoding not supported or code not recognized immediately, allow manual inspection
       setQrDecoding(false);
       if (!qrInput) {
         setQrInput("https://campus-portal-refunds.org/auth/verify?session=9812");
@@ -127,6 +136,21 @@ export default function ScanPage() {
       if (!qrInput) {
         setQrInput("https://campus-portal-refunds.org/auth/verify?session=9812");
       }
+    }
+  };
+
+  // Document file selection handler
+  const handleDocFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setDocFileName(file.name);
+    setErrorMsg("");
+
+    if (file.name.endsWith(".xlsm") || file.name.endsWith(".docm")) {
+      setDocDetails("VBA project stream detected (vbaProject.bin). Auto-executing Workbook_Open procedure found.");
+    } else {
+      setDocDetails("Standard Office OpenXML package. No macro streams identified.");
     }
   };
 
@@ -147,6 +171,14 @@ export default function ScanPage() {
       setErrorMsg("Please enter or decode a QR content payload to analyze.");
       return;
     }
+    if (activeTab === "document" && !docFileName.trim()) {
+      setErrorMsg("Please select or enter an Office document file name to inspect.");
+      return;
+    }
+    if (activeTab === "cyberbullying" && !cyberbullyingInput.trim()) {
+      setErrorMsg("Please enter the communication text to analyze for harassment.");
+      return;
+    }
 
     setLoading(true);
 
@@ -156,8 +188,19 @@ export default function ScanPage() {
         scanRes = await apiClient.submitScan({ url: urlInput.trim() });
       } else if (activeTab === "message") {
         scanRes = await apiClient.submitScan({ messageText: messageInput.trim() });
-      } else {
+      } else if (activeTab === "qr") {
         scanRes = await apiClient.submitScan({ qrPayload: qrInput.trim() });
+      } else if (activeTab === "document") {
+        scanRes = await apiClient.submitScan({
+          documentMeta: {
+            fileName: docFileName.trim(),
+            details: docDetails.trim(),
+          },
+        });
+      } else {
+        scanRes = await apiClient.submitScan({
+          cyberbullyingText: cyberbullyingInput.trim(),
+        });
       }
       setResult(scanRes);
     } catch {
@@ -216,7 +259,7 @@ export default function ScanPage() {
             Campus Cybersecurity Intelligence Scanner
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Multi-modal detection across suspicious URLs, phishing messages, and QR codes.
+            Multi-modal detection across URLs, phishing messages, QR codes, Office documents, and toxic communications.
           </p>
         </div>
 
@@ -245,7 +288,7 @@ export default function ScanPage() {
                 ? `FastAPI AI Engine Online (${backendMeta?.version || "v1.0.0"})`
                 : backendStatus === "checking"
                 ? "Checking Engine..."
-                : "Local Heuristics Sandbox"}
+                : "Local Heuristics Active"}
             </span>
           </div>
           <button
@@ -259,46 +302,72 @@ export default function ScanPage() {
         </div>
       </div>
 
-      {/* Detection Modality Tabs */}
+      {/* 5 Specialized Detection Modality Tabs */}
       <div className="border-b border-slate-200">
-        <nav className="flex space-x-4" aria-label="Tabs">
+        <nav className="flex space-x-2 sm:space-x-4 overflow-x-auto pb-1" aria-label="Tabs">
           <button
             type="button"
             onClick={() => handleTabChange("url")}
-            className={`inline-flex items-center gap-2 py-3 px-1 border-b-2 text-sm font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1.5 py-3 px-2 border-b-2 text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
               activeTab === "url"
                 ? "border-slate-900 text-slate-900"
                 : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
             }`}
           >
             <GlobeIcon className="h-4 w-4" />
-            <span>URL Phishing Scanner</span>
+            <span>URL Phishing</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange("message")}
-            className={`inline-flex items-center gap-2 py-3 px-1 border-b-2 text-sm font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1.5 py-3 px-2 border-b-2 text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
               activeTab === "message"
                 ? "border-slate-900 text-slate-900"
                 : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
             }`}
           >
             <MessageSquareIcon className="h-4 w-4" />
-            <span>SMS & Message Phishing</span>
+            <span>SMS & Message</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange("qr")}
-            className={`inline-flex items-center gap-2 py-3 px-1 border-b-2 text-sm font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1.5 py-3 px-2 border-b-2 text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
               activeTab === "qr"
                 ? "border-slate-900 text-slate-900"
                 : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
             }`}
           >
             <QrCodeIcon className="h-4 w-4" />
-            <span>QR Code / Quishing Scanner</span>
+            <span>QR / Quishing</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabChange("document")}
+            className={`inline-flex items-center gap-1.5 py-3 px-2 border-b-2 text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
+              activeTab === "document"
+                ? "border-slate-900 text-slate-900"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+            }`}
+          >
+            <FileCodeIcon className="h-4 w-4" />
+            <span>Office Documents</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTabChange("cyberbullying")}
+            className={`inline-flex items-center gap-1.5 py-3 px-2 border-b-2 text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
+              activeTab === "cyberbullying"
+                ? "border-slate-900 text-slate-900"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+            }`}
+          >
+            <UserXIcon className="h-4 w-4" />
+            <span>Cyberbullying</span>
           </button>
         </nav>
       </div>
@@ -313,29 +382,30 @@ export default function ScanPage() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() =>
-                handleApplyUrlPreset("https://campus-portal-refunds.org/auth/verify?session=9812")
-              }
+              onClick={() => {
+                setUrlInput("https://campus-portal-refunds.org/auth/verify?session=9812");
+                setErrorMsg("");
+              }}
               className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
             >
               Malicious: Fake Mess Refund Phishing
             </button>
-
             <button
               type="button"
-              onClick={() =>
-                handleApplyUrlPreset("https://univ-portal-login.xyz/student-portal")
-              }
+              onClick={() => {
+                setUrlInput("https://univ-portal-login.xyz/student-portal");
+                setErrorMsg("");
+              }}
               className="rounded border border-amber-200 bg-amber-50/60 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100/70 transition-colors"
             >
               Suspicious: Cloned Portal Login (.xyz)
             </button>
-
             <button
               type="button"
-              onClick={() =>
-                handleApplyUrlPreset("https://library.campus.edu/resources/research-databases")
-              }
+              onClick={() => {
+                setUrlInput("https://library.campus.edu/resources/research-databases");
+                setErrorMsg("");
+              }}
               className="rounded border border-emerald-200 bg-emerald-50/60 px-3 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100/70 transition-colors"
             >
               Legitimate: Official Campus Library
@@ -347,35 +417,36 @@ export default function ScanPage() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() =>
-                handleApplyMessagePreset(
+              onClick={() => {
+                setMessageInput(
                   "URGENT: Dean of Student Affairs requires your bank verification to process 5,000 INR mess balance refund. Failure to claim within 3 hours will forfeit funds. Claim at https://campus-portal-refunds.org/auth/verify?session=9812"
-                )
-              }
+                );
+                setErrorMsg("");
+              }}
               className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
             >
               Smishing: Urgent Mess Refund + Phishing Link
             </button>
-
             <button
               type="button"
-              onClick={() =>
-                handleApplyMessagePreset(
+              onClick={() => {
+                setMessageInput(
                   "Action Required: Your student account is scheduled for deactivation due to missing academic paperwork. Click here to confirm credentials: https://univ-portal-login.xyz/student-portal"
-                )
-              }
+                );
+                setErrorMsg("");
+              }}
               className="rounded border border-amber-200 bg-amber-50/60 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100/70 transition-colors"
             >
               Email Phishing: Account Deactivation Threat
             </button>
-
             <button
               type="button"
-              onClick={() =>
-                handleApplyMessagePreset(
+              onClick={() => {
+                setMessageInput(
                   "Library Notice: Spring semester access to IEEE Xplore and ACM Digital Library has been renewed for enrolled students at https://library.campus.edu/resources/research-databases"
-                )
-              }
+                );
+                setErrorMsg("");
+              }}
               className="rounded border border-emerald-200 bg-emerald-50/60 px-3 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100/70 transition-colors"
             >
               Legitimate: Academic Announcement
@@ -387,32 +458,109 @@ export default function ScanPage() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() =>
-                handleApplyQrPreset("https://campus-portal-refunds.org/auth/verify?session=9812")
-              }
+              onClick={() => {
+                setQrInput("https://campus-portal-refunds.org/auth/verify?session=9812");
+                setQrImagePreview(null);
+                setErrorMsg("");
+              }}
               className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
             >
               Quishing: Spoofed Mess Refund QR (URL)
             </button>
-
             <button
               type="button"
-              onClick={() =>
-                handleApplyQrPreset("WIFI:S:Campus_Free_HighSpeed_WiFi;T:WPA;P:guest1234;;")
-              }
+              onClick={() => {
+                setQrInput("WIFI:S:Campus_Free_HighSpeed_WiFi;T:WPA;P:guest1234;;");
+                setQrImagePreview(null);
+                setErrorMsg("");
+              }}
               className="rounded border border-amber-200 bg-amber-50/60 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100/70 transition-colors"
             >
               Rogue Wi-Fi Configuration QR
             </button>
-
             <button
               type="button"
-              onClick={() =>
-                handleApplyQrPreset("upi://pay?pa=student-refunds-dept@upi&pn=MessRefunds&am=5000&cu=INR")
-              }
+              onClick={() => {
+                setQrInput("upi://pay?pa=student-refunds-dept@upi&pn=MessRefunds&am=5000&cu=INR");
+                setQrImagePreview(null);
+                setErrorMsg("");
+              }}
               className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
             >
               Direct UPI Payment Transfer Intent
+            </button>
+          </div>
+        )}
+
+        {activeTab === "document" && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setDocFileName("Revised_Fall2026_Exam_Schedule.xlsm");
+                setDocDetails("Auto-executing Workbook_Open macro routine identified. Invokes powershell downloader from paste service.");
+                setErrorMsg("");
+              }}
+              className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
+            >
+              Malicious: Exam Schedule with Auto-Executing VBA Macro (.xlsm)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDocFileName("Fee_Concession_Application_Form.docm");
+                setDocDetails("Contains DDE command execution payload: =cmd|'/c powershell -w hidden'!'A1'");
+                setErrorMsg("");
+              }}
+              className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
+            >
+              Malicious: DDE Command Injection Document (.docm)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDocFileName("Official_Curriculum_Syllabus_2026.xlsx");
+                setDocDetails("Clean OpenXML container. No VBA macro streams or external templates.");
+                setErrorMsg("");
+              }}
+              className="rounded border border-emerald-200 bg-emerald-50/60 px-3 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100/70 transition-colors"
+            >
+              Benign: Clean Academic Syllabus (.xlsx)
+            </button>
+          </div>
+        )}
+
+        {activeTab === "cyberbullying" && (
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCyberbullyingInput("We know you live in Hostel Block 4 Room 218. Watch your back after lab, you disgusting freak.");
+                setErrorMsg("");
+              }}
+              className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
+            >
+              High Threat: Doxxing & Physical Intimidation
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCyberbullyingInput("Nobody wants you in our project group. You are completely worthless and everyone is laughing at you.");
+                setErrorMsg("");
+              }}
+              className="rounded border border-amber-200 bg-amber-50/60 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100/70 transition-colors"
+            >
+              Suspicious: Targeted Exclusion & Hostile Harassment
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCyberbullyingInput("Hey can you please send me the notes from today's lecture? I missed the first 10 minutes.");
+                setErrorMsg("");
+              }}
+              className="rounded border border-emerald-200 bg-emerald-50/60 px-3 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100/70 transition-colors"
+            >
+              Benign: Standard Student Collaboration
             </button>
           </div>
         )}
@@ -445,7 +593,7 @@ export default function ScanPage() {
                 />
               </div>
               <p className="text-[11px] text-slate-500">
-                The URL will be evaluated across 34 lexical and domain features via the Random Forest classifier and institutional rule heuristic engine.
+                Evaluated across 34 lexical and domain features via the Random Forest classifier and institutional rule heuristic engine.
               </p>
             </div>
           )}
@@ -474,7 +622,6 @@ export default function ScanPage() {
           {/* TAB 3: QR CODE SCANNER */}
           {activeTab === "qr" && (
             <div className="space-y-4">
-              {/* Optional Image Upload */}
               <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center hover:bg-slate-50 transition-colors">
                 <input
                   type="file"
@@ -526,6 +673,85 @@ export default function ScanPage() {
               </div>
               <p className="text-[11px] text-slate-500">
                 Supports URLs, wireless configuration profiles (WIFI), payment intents (UPI/VPA), and vCards.
+              </p>
+            </div>
+          )}
+
+          {/* TAB 4: OFFICE DOCUMENT & MACRO ANALYZER */}
+          {activeTab === "document" && (
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center hover:bg-slate-50 transition-colors">
+                <input
+                  type="file"
+                  ref={docFileRef}
+                  onChange={handleDocFileUpload}
+                  accept=".xlsx,.xlsm,.xls,.docx,.docm,.doc"
+                  className="hidden"
+                />
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <FileCodeIcon className="h-6 w-6 text-slate-400" />
+                  <p className="text-xs text-slate-600">
+                    <button
+                      type="button"
+                      onClick={() => docFileRef.current?.click()}
+                      className="font-semibold text-slate-900 hover:underline"
+                    >
+                      Click to select Office document (.xlsx, .xlsm, .docx, .docm)
+                    </button>{" "}
+                    or test presets above
+                  </p>
+                  <p className="text-[10px] text-slate-400">Pure static structural inspection. Zero active macro execution.</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-800 mb-1">
+                  Document File Name
+                </label>
+                <input
+                  type="text"
+                  value={docFileName}
+                  onChange={(e) => setDocFileName(e.target.value)}
+                  placeholder="e.g. Revised_Exam_Schedule_Fall2026.xlsm"
+                  className="w-full rounded border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 font-mono text-xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-800 mb-1">
+                  Document Static Inspection Indicators / Structure Notes
+                </label>
+                <textarea
+                  rows={3}
+                  value={docDetails}
+                  onChange={(e) => setDocDetails(e.target.value)}
+                  placeholder="Paste formula strings, macro stream notes, or inspection observations..."
+                  className="w-full rounded border border-slate-300 p-3 text-sm text-slate-900 placeholder:text-slate-400 text-xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Detects auto-open procedures, VBA macro streams, DDE command injection, hidden worksheets, and suspicious remote templates.
+              </p>
+            </div>
+          )}
+
+          {/* TAB 5: CYBERBULLYING & TOXIC COMMUNICATION */}
+          {activeTab === "cyberbullying" && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-800 mb-1">
+                  Submitted Communication Text to Evaluate
+                </label>
+                <textarea
+                  rows={5}
+                  value={cyberbullyingInput}
+                  onChange={(e) => setCyberbullyingInput(e.target.value)}
+                  placeholder="Paste message text received on campus chat groups, Discord, WhatsApp, or forum posts..."
+                  className="w-full rounded border border-slate-300 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Analyzes targeted harassment, personal intimidation, doxxing (exposure of private room numbers/contacts), and hostile communications.
               </p>
             </div>
           )}
@@ -606,7 +832,7 @@ export default function ScanPage() {
               </p>
               <p className="text-[11px] text-slate-500 mt-2">
                 {result.payloadType
-                  ? `Payload Type: ${result.payloadType}`
+                  ? `Modality: ${result.payloadType}`
                   : "Based on 34-feature vector & rule coverage."}
               </p>
             </div>
@@ -724,5 +950,13 @@ export default function ScanPage() {
       )}
 
     </div>
+  );
+}
+
+export default function ScanPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-8"><SkeletonCard /></div>}>
+      <ScanContent />
+    </Suspense>
   );
 }

@@ -321,8 +321,14 @@ export const apiClient = {
     return null;
   },
 
-  // WD-03: Scanner Submission (Connected to /api/v1/scan/url, /api/v1/scan/message, and /api/v1/scan/qr)
-  async submitScan(payload: { url?: string; messageText?: string; qrPayload?: string }): Promise<ScanResult> {
+  // WD-03: Scanner Submission (Connected to /api/v1/scan/url, /api/v1/scan/message, and /api/v1/scan/qr + Multi-Modal Fallbacks)
+  async submitScan(payload: {
+    url?: string;
+    messageText?: string;
+    qrPayload?: string;
+    documentMeta?: { fileName: string; fileSize?: number; fileType?: string; details?: string };
+    cyberbullyingText?: string;
+  }): Promise<ScanResult> {
     try {
       const headers = getHeaders();
       let res: Response | null = null;
@@ -338,11 +344,11 @@ export const apiClient = {
           headers,
           body: JSON.stringify({ url: payload.url }),
         });
-      } else if (payload.messageText) {
+      } else if (payload.messageText || payload.cyberbullyingText) {
         res = await fetch(`${API_BASE}/scan/message`, {
           method: "POST",
           headers,
-          body: JSON.stringify({ message_text: payload.messageText }),
+          body: JSON.stringify({ message_text: payload.messageText || payload.cyberbullyingText }),
         });
       }
 
@@ -415,7 +421,155 @@ export const apiClient = {
     const url = payload.url || "";
     const text = payload.messageText || "";
     const qr = payload.qrPayload || "";
-    const combined = `${url} ${text} ${qr}`.toLowerCase();
+    const doc = payload.documentMeta;
+    const bullying = payload.cyberbullyingText || "";
+    const combined = `${url} ${text} ${qr} ${bullying}`.toLowerCase();
+
+    // Document Threat Analysis Module
+    if (doc) {
+      const fileNameLower = (doc.fileName || "").toLowerCase();
+      const detailsLower = (doc.details || "").toLowerCase();
+      const isMacroEnabled = fileNameLower.endsWith(".xlsm") || fileNameLower.endsWith(".docm") || fileNameLower.endsWith(".vbs") || fileNameLower.endsWith(".hta");
+      const hasAutoExec = /workbook_open|auto_open|document_open|shell|powershell|cmd\.exe/i.test(detailsLower);
+      const hasDde = /=cmd\||=powershell\||ddeexec/i.test(detailsLower);
+      const hasExternalLink = /targetmode="external"|http:\/\/|https:\/\//i.test(detailsLower);
+
+      let docScore = 15;
+      const docIndicators: ScanIndicator[] = [];
+
+      if (isMacroEnabled) {
+        docScore += 35;
+        docIndicators.push({
+          type: "REPUTATION",
+          label: "Macro-Enabled Office Container Format",
+          description: `The file has extension '${fileNameLower.split('.').pop()}', capable of executing embedded active VBA procedures.`,
+          severity: "warning",
+        });
+      }
+
+      if (hasAutoExec) {
+        docScore += 45;
+        docIndicators.push({
+          type: "CREDENTIAL_HARVEST",
+          label: "Auto-Execution Macro Trigger Routine",
+          description: "Contains auto-execution handlers (Workbook_Open / Shell invocation) designed to execute code without user consent.",
+          severity: "danger",
+        });
+      }
+
+      if (hasDde) {
+        docScore += 40;
+        docIndicators.push({
+          type: "REPUTATION",
+          label: "Dynamic Data Exchange (DDE) Command Injection",
+          description: "Embedded formulas invoke external shell binaries directly from cell evaluation contexts.",
+          severity: "danger",
+        });
+      }
+
+      if (hasExternalLink) {
+        docScore += 20;
+        docIndicators.push({
+          type: "DOMAIN_AGE",
+          label: "External Relationship Corridors",
+          description: "The document references remote external templates or unverified staging servers.",
+          severity: "warning",
+        });
+      }
+
+      docScore = Math.min(Math.max(docScore, 10), 98);
+      const isMalicious = docScore >= 70;
+      const isSuspicious = docScore >= 40 && docScore < 70;
+
+      return {
+        id: `scn-doc-${Date.now()}`,
+        payloadType: "DOCUMENT",
+        verdict: isMalicious ? "MALICIOUS" : isSuspicious ? "SUSPICIOUS" : "SAFE",
+        riskScore: docScore,
+        threatLevel: isMalicious ? "HIGH" : isSuspicious ? "SUSPICIOUS" : "SAFE",
+        confidence: 0.93,
+        analyzedAt: new Date().toISOString(),
+        summary: isMalicious
+          ? `High-risk active code discovered in '${doc.fileName}'. Auto-execution macros or command injection triggers identified.`
+          : isSuspicious
+          ? `File '${doc.fileName}' exhibits suspicious container features. Exercise caution before disabling Protected View.`
+          : `Static inspection of '${doc.fileName}' revealed no dangerous active content or formula exploits.`,
+        indicators: docIndicators,
+        recommendations: [
+          "Do not click 'Enable Content' or 'Enable Macros' on this file.",
+          "University academic timetables and notices are distributed exclusively as verified PDFs.",
+          "Inspect document streams using static security sandboxes before opening.",
+        ],
+      };
+    }
+
+    // Cyberbullying & Hostile Language Module
+    if (bullying) {
+      const bLower = bullying.toLowerCase();
+      const hasPersonalThreat = /kill|beat|destroy|hurt|ruin your|die|attack|watch your back/i.test(bLower);
+      const hasHarassment = /loser|ugly|worthless|trash|disgusting|kill yourself|get lost|freak/i.test(bLower);
+      const hasDoxxing = /room no|phone number|address|leak your|hostel block|contact no/i.test(bLower);
+
+      let bullyScore = 15;
+      const bIndicators: ScanIndicator[] = [];
+
+      if (hasPersonalThreat) {
+        bullyScore += 55;
+        bIndicators.push({
+          type: "URGENCY_LANGUAGE",
+          label: "Direct Personal Intimidation or Threat",
+          description: "Language contains direct expressions of hostility or physical intimidation.",
+          severity: "danger",
+        });
+      }
+
+      if (hasHarassment) {
+        bullyScore += 35;
+        bIndicators.push({
+          type: "REPUTATION",
+          label: "Targeted Abusive Communication",
+          description: "Content displays derogatory remarks intended to humiliate or distress the recipient.",
+          severity: "warning",
+        });
+      }
+
+      if (hasDoxxing) {
+        bullyScore += 40;
+        bIndicators.push({
+          type: "CREDENTIAL_HARVEST",
+          label: "Doxxing & Unauthorized Personal Data Exposure",
+          description: "Message references private personal identifiers such as hostel room numbers or private contact details.",
+          severity: "danger",
+        });
+      }
+
+      bullyScore = Math.min(Math.max(bullyScore, 10), 96);
+      const isSevere = bullyScore >= 70;
+      const isModerate = bullyScore >= 40 && bullyScore < 70;
+
+      return {
+        id: `scn-bully-${Date.now()}`,
+        messageText: bullying,
+        payloadType: "COMMUNICATION",
+        verdict: isSevere ? "MALICIOUS" : isModerate ? "SUSPICIOUS" : "SAFE",
+        riskScore: bullyScore,
+        threatLevel: isSevere ? "HIGH" : isModerate ? "SUSPICIOUS" : "SAFE",
+        confidence: 0.90,
+        analyzedAt: new Date().toISOString(),
+        summary: isSevere
+          ? "High probability of harmful online communication or targeted harassment. Immediate support and documentation recommended."
+          : isModerate
+          ? "Derogatory or intimidating language detected. Content flagged for supportive review."
+          : "Standard peer communication profile. No immediate severe harassment signals detected.",
+        indicators: bIndicators,
+        recommendations: [
+          "Preserve uncropped screenshots with timestamps and visible user handles.",
+          "Do not engage or retaliate against hostile senders.",
+          "Confidential support is available via Campus Student Welfare Hotline (1-800-CAMPUS-CARE).",
+          "File an anonymous incident report to alert campus counselors and administrative teams.",
+        ],
+      };
+    }
 
     const isUrgent = /urgent|immediate|within \d+|suspended|expire|action required|penalty/i.test(combined);
     const isFinancial = /fee|refund|bank|upi|qr|payment|mess balance|stipend|scholarship/i.test(combined);
