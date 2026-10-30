@@ -11,8 +11,15 @@ from dataclasses import dataclass, field
 import io
 import re
 from typing import Any, Dict, List, Optional, Tuple
-from PIL import Image
-import zxingcpp
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
+try:
+    import zxingcpp
+except ImportError:
+    zxingcpp = None
 
 from backend.app.core.errors import ValidationException
 from backend.app.services.detection.model_adapters.qr_adapter import QRModelAdapter

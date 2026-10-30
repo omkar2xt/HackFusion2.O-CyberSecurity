@@ -62,8 +62,43 @@ class EvidenceCorrelator:
                     ThreatIntelStatus.UNAVAILABLE,
                 ):
                     failed_sources.append(ti.provider_name)
+                    items.append(
+                        EvidenceItem(
+                            source=EvidenceSource.THREAT_INTELLIGENCE,
+                            evidence_type=EvidenceType.THREAT_INTELLIGENCE,
+                            severity=ScanRiskLevel.UNKNOWN,
+                            confidence=0.0,
+                            code=f"TI_OFFLINE_{ti.provider_name.upper().replace(' ', '_')}",
+                            label=f"{ti.provider_name} Telemetry Offline",
+                            detail=ti.details or f"{ti.provider_name} threat telemetry was unreachable or unconfigured during scan ({ti.status.value}).",
+                        )
+                    )
+                elif ti.status == ThreatIntelStatus.SKIPPED_INTERNAL_IP:
+                    responding_sources.append(ti.provider_name)
+                    items.append(
+                        EvidenceItem(
+                            source=EvidenceSource.THREAT_INTELLIGENCE,
+                            evidence_type=EvidenceType.THREAT_INTELLIGENCE,
+                            severity=ScanRiskLevel.LOW,
+                            confidence=0.99,
+                            code=f"TI_SKIPPED_{ti.provider_name.upper().replace(' ', '_')}",
+                            label=f"{ti.provider_name} Skipped (Private IP)",
+                            detail="Target is a private network/RFC1918 address; external lookup skipped for SSRF protection.",
+                        )
+                    )
                 else:
                     responding_sources.append(ti.provider_name)
+                    items.append(
+                        EvidenceItem(
+                            source=EvidenceSource.THREAT_INTELLIGENCE,
+                            evidence_type=EvidenceType.THREAT_INTELLIGENCE,
+                            severity=ScanRiskLevel.LOW,
+                            confidence=0.95,
+                            code=f"TI_CLEAN_{ti.provider_name.upper().replace(' ', '_')}",
+                            label=f"{ti.provider_name} Clean Consensus",
+                            detail=ti.details or f"Zero malicious records indexed in {ti.provider_name}.",
+                        )
+                    )
 
         # 2. Correlate Rule Engine Evidence
         if rule_result and rule_result.fired_rules:
