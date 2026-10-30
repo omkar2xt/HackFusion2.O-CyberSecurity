@@ -34,7 +34,8 @@ export interface ScanResult {
   analyzedAt: string;
   summary: string;
   indicators: ScanIndicator[];
-  recommendations: string[];
+  recommendations: string[];
+  rawFeatures?: Record<string, number | string | boolean>;
 }
 
 export type IncidentCategory =

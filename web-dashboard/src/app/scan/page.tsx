@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "../../services/api";
-import { ScanResult } from "../../lib/types";
+import { ScanResult, ScanIndicator } from "../../lib/types";
 import {
   ScanIcon,
   ShieldIcon,
@@ -17,10 +17,81 @@ import {
   RefreshCwIcon,
   FileCodeIcon,
   UserXIcon,
+  CopyIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  TerminalIcon,
+  InfoIcon,
 } from "../../components/Icons";
-import { SkeletonCard } from "../../components/SkeletonLoader";
+import {
+  extractUrlFeatures,
+  analyzeLiveUrl,
+  analyzeLiveMessage,
+  analyzeLiveQr,
+  analyzeLiveDocument,
+  analyzeLiveCyberbullying,
+  FeatureRecord,
+} from "../../lib/urlFeatures";
 
 type ScanTab = "url" | "message" | "qr" | "document" | "cyberbullying";
+
+function RadialRiskGauge({ score }: { score: number }) {
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+
+  const color =
+    score > 70
+      ? { stroke: "#dc2626", text: "text-red-700", bg: "bg-red-50" }
+      : score > 40
+      ? { stroke: "#d97706", text: "text-amber-700", bg: "bg-amber-50" }
+      : { stroke: "#059669", text: "text-emerald-700", bg: "bg-emerald-50" };
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="relative flex items-center justify-center">
+        <svg className="w-24 h-24 transform -rotate-90">
+          <circle
+            cx="48"
+            cy="48"
+            r={radius}
+            stroke="#e2e8f0"
+            strokeWidth="8"
+            fill="transparent"
+          />
+          <circle
+            cx="48"
+            cy="48"
+            r={radius}
+            stroke={color.stroke}
+            strokeWidth="8"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            fill="transparent"
+            className="transition-all duration-1000 ease-out"
+          />
+        </svg>
+        <div className="absolute flex flex-col items-center justify-center">
+          <span className={`text-2xl font-black ${color.text}`}>{score}</span>
+          <span className="text-[10px] uppercase font-bold text-slate-400">/ 100</span>
+        </div>
+      </div>
+      <div>
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-500">
+          Dynamic Risk Score
+        </div>
+        <div className={`text-base font-bold ${color.text} mt-0.5`}>
+          {score > 70 ? "Critical Threat Level" : score > 40 ? "Elevated Suspicion" : "Likely Safe"}
+        </div>
+        <p className="text-[11px] text-slate-500 max-w-[200px] mt-0.5 leading-snug">
+          Synthesized from 34 lexical dimensions & institutional rule heuristics.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 function ScanContent() {
   const router = useRouter();
@@ -47,8 +118,18 @@ function ScanContent() {
 
   // Scan execution states
   const [loading, setLoading] = useState(false);
+  const [pipelineStep, setPipelineStep] = useState(0);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Interactive UI modals & controls
+  const [showFeatureModal, setShowFeatureModal] = useState(false);
+  const [featureSearch, setFeatureSearch] = useState("");
+  const [featureCategory, setFeatureCategory] = useState<"all" | "structural" | "domain" | "lexical" | "heuristic">("all");
+  const [showFirewallModal, setShowFirewallModal] = useState(false);
+  const [copiedJson, setCopiedJson] = useState(false);
+  const [copiedRule, setCopiedRule] = useState(false);
+  const [indicatorFilter, setIndicatorFilter] = useState<"ALL" | "DANGER" | "WARNING">("ALL");
 
   // Backend connection status
   const [backendStatus, setBackendStatus] = useState<"checking" | "online" | "offline">("checking");
@@ -91,13 +172,35 @@ function ScanContent() {
     }
   }, [searchParams]);
 
+  // Real-time analyzers
+  const liveUrlAnalysis = useMemo(() => analyzeLiveUrl(urlInput), [urlInput]);
+  const liveMessageAnalysis = useMemo(() => analyzeLiveMessage(messageInput), [messageInput]);
+  const liveQrAnalysis = useMemo(() => analyzeLiveQr(qrInput), [qrInput]);
+  const liveDocAnalysis = useMemo(() => analyzeLiveDocument(docFileName, docDetails), [docFileName, docDetails]);
+  const liveCyberAnalysis = useMemo(() => analyzeLiveCyberbullying(cyberbullyingInput), [cyberbullyingInput]);
+
+  // Real-time 34-feature vector for currently typed or analyzed URL
+  const targetUrlForFeatures = result?.targetUrl || urlInput || "https://example.edu";
+  const urlFeatures34 = useMemo(() => extractUrlFeatures(targetUrlForFeatures), [targetUrlForFeatures]);
+
+  const filteredFeatures = useMemo(() => {
+    return urlFeatures34.filter((f) => {
+      const matchesSearch =
+        f.name.toLowerCase().includes(featureSearch.toLowerCase()) ||
+        f.key.toLowerCase().includes(featureSearch.toLowerCase()) ||
+        f.description.toLowerCase().includes(featureSearch.toLowerCase());
+      const matchesCat = featureCategory === "all" || f.category === featureCategory;
+      return matchesSearch && matchesCat;
+    });
+  }, [urlFeatures34, featureSearch, featureCategory]);
+
   // Handle Tab Switch
   const handleTabChange = (tab: ScanTab) => {
     setActiveTab(tab);
     setErrorMsg("");
   };
 
-  // Client-side QR decoding using native BarcodeDetector API if available, or fallback
+  // Client-side QR decoding
   const handleQrFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -154,7 +257,7 @@ function ScanContent() {
     }
   };
 
-  // Main Scan Dispatcher
+  // Main Scan Dispatcher with Animated Pipeline Sequencer
   const handleScan = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setErrorMsg("");
@@ -181,6 +284,13 @@ function ScanContent() {
     }
 
     setLoading(true);
+    setPipelineStep(1);
+
+    // Dynamic progression simulator to give rich feedback
+    const stepTimer1 = setTimeout(() => setPipelineStep(2), 220);
+    const stepTimer2 = setTimeout(() => setPipelineStep(3), 480);
+    const stepTimer3 = setTimeout(() => setPipelineStep(4), 720);
+    const stepTimer4 = setTimeout(() => setPipelineStep(5), 980);
 
     try {
       let scanRes: ScanResult;
@@ -202,11 +312,19 @@ function ScanContent() {
           cyberbullyingText: cyberbullyingInput.trim(),
         });
       }
+
+      // Small delay to ensure step animations are visible
+      await new Promise((r) => setTimeout(r, 1100));
       setResult(scanRes);
     } catch {
       setErrorMsg("Failed to complete scan. Please verify your connection or input format.");
     } finally {
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
+      clearTimeout(stepTimer3);
+      clearTimeout(stepTimer4);
       setLoading(false);
+      setPipelineStep(0);
     }
   };
 
@@ -214,6 +332,13 @@ function ScanContent() {
     if (!result) return;
     sessionStorage.setItem("signalsafe_pending_scan", JSON.stringify(result));
     router.push("/report");
+  };
+
+  const handleCopyJson = () => {
+    if (!result) return;
+    navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+    setCopiedJson(true);
+    setTimeout(() => setCopiedJson(false), 2000);
   };
 
   const getVerdictBadge = (verdict: ScanResult["verdict"]) => {
@@ -244,6 +369,24 @@ function ScanContent() {
         };
     }
   };
+
+  const filteredIndicators = useMemo(() => {
+    if (!result) return [];
+    if (indicatorFilter === "DANGER") return result.indicators.filter((i) => i.severity === "danger");
+    if (indicatorFilter === "WARNING") return result.indicators.filter((i) => i.severity === "warning");
+    return result.indicators;
+  }, [result, indicatorFilter]);
+
+  // Synthesized Firewall Rules
+  const firewallRules = useMemo(() => {
+    const host = liveUrlAnalysis.hostname || "suspicious-domain.xyz";
+    const ip = liveUrlAnalysis.isIp ? host : "192.0.2.1";
+    return {
+      iptables: `# Linux iptables drop rule\niptables -A INPUT -s ${ip} -j DROP\niptables -A FORWARD -d ${ip} -j DROP`,
+      powershell: `# Windows Defender Firewall block rule\nNew-NetFirewallRule -DisplayName "SignalSafe_Block_${host}" -Direction Outbound -RemoteAddress "${ip}" -Action Block`,
+      dnsRpz: `; Campus BIND DNS Sinkhole Rule\n${host} IN CNAME sinkhole.campus.internal.\n*.${host} IN CNAME sinkhole.campus.internal.`,
+    };
+  }, [liveUrlAnalysis]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -403,7 +546,7 @@ function ScanContent() {
             <button
               type="button"
               onClick={() => {
-                setUrlInput("https://library.campus.edu/resources/research-databases");
+                setUrlInput("https://library.university.edu/research/databases");
                 setErrorMsg("");
               }}
               className="rounded border border-emerald-200 bg-emerald-50/60 px-3 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100/70 transition-colors"
@@ -418,33 +561,27 @@ function ScanContent() {
             <button
               type="button"
               onClick={() => {
-                setMessageInput(
-                  "URGENT: Dean of Student Affairs requires your bank verification to process 5,000 INR mess balance refund. Failure to claim within 3 hours will forfeit funds. Claim at https://campus-portal-refunds.org/auth/verify?session=9812"
-                );
+                setMessageInput("URGENT: Dean of Students notice. Your hostel registration fee is overdue. Pay immediately at https://campus-portal-refunds.org/auth/verify to avoid de-enrollment.");
                 setErrorMsg("");
               }}
               className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
             >
-              Smishing: Urgent Mess Refund + Phishing Link
+              Smishing: Hostel Fee Overdue Coercion
             </button>
             <button
               type="button"
               onClick={() => {
-                setMessageInput(
-                  "Action Required: Your student account is scheduled for deactivation due to missing academic paperwork. Click here to confirm credentials: https://univ-portal-login.xyz/student-portal"
-                );
+                setMessageInput("Hi, your student mess refund of Rs 5000 is ready. Verify your bank account within 24 hours: upi://pay?pa=student-refunds-dept@upi");
                 setErrorMsg("");
               }}
-              className="rounded border border-amber-200 bg-amber-50/60 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100/70 transition-colors"
+              className="rounded border border-red-200 bg-red-50/60 px-3 py-1.5 text-xs font-medium text-red-900 hover:bg-red-100/70 transition-colors"
             >
-              Email Phishing: Account Deactivation Threat
+              Smishing: Mess Refund Payment Trap
             </button>
             <button
               type="button"
               onClick={() => {
-                setMessageInput(
-                  "Library Notice: Spring semester access to IEEE Xplore and ACM Digital Library has been renewed for enrolled students at https://library.campus.edu/resources/research-databases"
-                );
+                setMessageInput("Campus reminder: Mid-semester examinations commence on Monday at 09:00 AM. Admit cards available on the official intranet portal.");
                 setErrorMsg("");
               }}
               className="rounded border border-emerald-200 bg-emerald-50/60 px-3 py-1.5 text-xs font-medium text-emerald-900 hover:bg-emerald-100/70 transition-colors"
@@ -566,7 +703,7 @@ function ScanContent() {
         )}
       </div>
 
-      {/* Input Form Card */}
+      {/* Input Form Card with Live As-You-Type Interactive Cards */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-6">
         <form onSubmit={handleScan} className="space-y-4">
           
@@ -584,14 +721,113 @@ function ScanContent() {
                 <label className="block text-xs font-semibold text-slate-800 mb-1">
                   Target URL to Analyze
                 </label>
-                <input
-                  type="text"
-                  value={urlInput}
-                  onChange={(e) => setUrlInput(e.target.value)}
-                  placeholder="e.g. https://unverified-portal.xyz/verify or login link"
-                  className="w-full rounded border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 font-mono text-xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    placeholder="e.g. https://unverified-portal.xyz/verify or login link"
+                    className="w-full rounded border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 font-mono text-xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 pr-24"
+                  />
+                  {urlInput && (
+                    <button
+                      type="button"
+                      onClick={() => setUrlInput("")}
+                      className="absolute right-2.5 top-2.5 text-xs text-slate-400 hover:text-slate-700 bg-slate-100 px-2 py-0.5 rounded"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
               </div>
+
+              {/* LIVE AS-YOU-TYPE FORENSIC HUD */}
+              {urlInput.trim().length > 3 && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3.5 space-y-3 transition-all animate-fadeIn">
+                  <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                      <TerminalIcon className="h-3.5 w-3.5 text-slate-700" />
+                      Live Pre-Inference Inspection
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowFeatureModal(true)}
+                      className="text-[11px] font-semibold text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1"
+                    >
+                      <InfoIcon className="h-3.5 w-3.5" />
+                      Inspect 34 Model Feature Dimensions
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    {/* Protocol */}
+                    <div className="bg-white border border-slate-200 rounded p-2">
+                      <div className="text-[10px] text-slate-500 font-medium">Protocol</div>
+                      <div className="flex items-center gap-1.5 font-mono font-bold mt-0.5">
+                        <LockIcon className={`h-3 w-3 ${liveUrlAnalysis.isHttps ? "text-emerald-600" : "text-amber-600"}`} />
+                        <span className={liveUrlAnalysis.isHttps ? "text-emerald-700" : "text-amber-700"}>
+                          {liveUrlAnalysis.protocol.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Domain & TLD */}
+                    <div className="bg-white border border-slate-200 rounded p-2">
+                      <div className="text-[10px] text-slate-500 font-medium">Host / TLD</div>
+                      <div className="truncate font-mono font-bold text-slate-800 mt-0.5">
+                        {liveUrlAnalysis.hostname || "None"}
+                        <span className="text-blue-600 font-normal"> {liveUrlAnalysis.tld}</span>
+                      </div>
+                    </div>
+
+                    {/* Shannon Entropy */}
+                    <div className="bg-white border border-slate-200 rounded p-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-slate-500 font-medium">Shannon Entropy</span>
+                        <span className="text-[10px] font-mono text-slate-600">{liveUrlAnalysis.entropy} bits</span>
+                      </div>
+                      <div className="w-full bg-slate-200 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                        <div
+                          className={`h-full ${
+                            liveUrlAnalysis.entropy > 4.5
+                              ? "bg-red-600"
+                              : liveUrlAnalysis.entropy > 3.8
+                              ? "bg-amber-500"
+                              : "bg-emerald-500"
+                          }`}
+                          style={{ width: `${Math.min(100, (liveUrlAnalysis.entropy / 6) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Numeric Digits Ratio */}
+                    <div className="bg-white border border-slate-200 rounded p-2">
+                      <div className="text-[10px] text-slate-500 font-medium">Digit Density</div>
+                      <div className="font-mono font-bold text-slate-800 mt-0.5">
+                        {liveUrlAnalysis.digitRatio}% <span className="text-[10px] text-slate-400 font-normal">({liveUrlAnalysis.length} chars)</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Suspicious Tokens Chips */}
+                  {liveUrlAnalysis.detectedKeywords.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      <span className="text-[10px] font-semibold text-red-900 uppercase tracking-wide">
+                        Targeting Triggers:
+                      </span>
+                      {liveUrlAnalysis.detectedKeywords.map((kw, i) => (
+                        <span
+                          key={i}
+                          className="bg-red-100 text-red-800 border border-red-200 text-[10px] px-2 py-0.5 rounded font-mono font-semibold"
+                        >
+                          {kw}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <p className="text-[11px] text-slate-500">
                 Evaluated across 34 lexical and domain features via the Random Forest classifier and institutional rule heuristic engine.
               </p>
@@ -610,9 +846,66 @@ function ScanContent() {
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   placeholder="Paste WhatsApp message, SMS notification, or email headers & body..."
-                  className="w-full rounded border border-slate-300 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                  className="w-full rounded border border-slate-300 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 font-mono text-xs"
                 />
               </div>
+
+              {/* LIVE MESSAGE HUD */}
+              {messageInput.trim().length > 5 && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3.5 space-y-2.5 transition-all">
+                  <div className="flex items-center justify-between text-xs text-slate-600 border-b border-slate-200/80 pb-2">
+                    <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+                      <MessageSquareIcon className="h-3.5 w-3.5 text-slate-700" />
+                      Live Message Heuristics
+                    </span>
+                    <span>
+                      {liveMessageAnalysis.words} words • {liveMessageAnalysis.chars} characters
+                    </span>
+                  </div>
+
+                  {liveMessageAnalysis.triggersFound.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] font-bold text-red-800 uppercase tracking-wide">
+                        Social Engineering Patterns:
+                      </span>
+                      {liveMessageAnalysis.triggersFound.map((trig, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-red-100 text-red-900 border border-red-200 text-[10px] font-semibold px-2 py-0.5 rounded"
+                        >
+                          {trig}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {liveMessageAnalysis.extractedUrls.length > 0 && (
+                    <div className="pt-1">
+                      <p className="text-[11px] font-semibold text-slate-700 mb-1">
+                        Discovered Embedded URLs ({liveMessageAnalysis.extractedUrls.length}):
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {liveMessageAnalysis.extractedUrls.map((extUrl, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setActiveTab("url");
+                              setUrlInput(extUrl);
+                            }}
+                            className="bg-white border border-slate-300 hover:border-slate-800 px-2 py-1 rounded text-[11px] font-mono text-slate-800 inline-flex items-center gap-1 transition-colors"
+                          >
+                            <GlobeIcon className="h-3 w-3 text-blue-600" />
+                            <span className="truncate max-w-[220px]">{extUrl}</span>
+                            <span className="text-blue-700 font-bold ml-1">Scan -&gt;</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <p className="text-[11px] text-slate-500">
                 Automatically detects social engineering coercion, urgent threats, and extracts embedded URLs for deep hybrid threat evaluation.
               </p>
@@ -671,6 +964,26 @@ function ScanContent() {
                   className="w-full rounded border border-slate-300 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 font-mono text-xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
                 />
               </div>
+
+              {/* LIVE QR HUD */}
+              {qrInput.trim().length > 2 && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                      <QrCodeIcon className="h-3.5 w-3.5 text-slate-700" />
+                      Payload Schema Detection
+                    </span>
+                    <span className="bg-slate-900 text-white font-mono text-[10px] px-2 py-0.5 rounded font-bold">
+                      {liveQrAnalysis.type}
+                    </span>
+                  </div>
+                  <div className="text-xs bg-white border border-slate-200 rounded p-2.5 space-y-1">
+                    <p className="font-semibold text-slate-800">{liveQrAnalysis.details}</p>
+                    <p className="text-[11px] text-amber-700 font-medium">Risk Advisory: {liveQrAnalysis.riskBadge}</p>
+                  </div>
+                </div>
+              )}
+
               <p className="text-[11px] text-slate-500">
                 Supports URLs, wireless configuration profiles (WIFI), payment intents (UPI/VPA), and vCards.
               </p>
@@ -729,6 +1042,46 @@ function ScanContent() {
                   className="w-full rounded border border-slate-300 p-3 text-sm text-slate-900 placeholder:text-slate-400 text-xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
                 />
               </div>
+
+              {/* LIVE DOCUMENT HUD */}
+              {docFileName && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3.5 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                      <FileCodeIcon className="h-3.5 w-3.5 text-slate-700" />
+                      Static Macro Profile
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                      liveDocAnalysis.riskRating === "CRITICAL"
+                        ? "bg-red-600 text-white"
+                        : liveDocAnalysis.riskRating === "HIGH RISK"
+                        ? "bg-amber-600 text-white"
+                        : "bg-emerald-600 text-white"
+                    }`}>
+                      {liveDocAnalysis.riskRating}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                    <div className="bg-white border border-slate-200 rounded p-2">
+                      <div className="text-[10px] text-slate-500">Container Format</div>
+                      <div className="font-mono font-bold text-slate-800 mt-0.5">{liveDocAnalysis.extension || "Unknown"}</div>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded p-2">
+                      <div className="text-[10px] text-slate-500">VBA Stream Risk</div>
+                      <div className={`font-semibold mt-0.5 ${liveDocAnalysis.vbaStreamsDetected ? "text-red-700" : "text-emerald-700"}`}>
+                        {liveDocAnalysis.vbaStreamsDetected ? "VBA Project Identified" : "No Streams"}
+                      </div>
+                    </div>
+                    <div className="bg-white border border-slate-200 rounded p-2">
+                      <div className="text-[10px] text-slate-500">Command Execution</div>
+                      <div className={`font-semibold mt-0.5 ${liveDocAnalysis.ddeDetected ? "text-red-700" : "text-slate-600"}`}>
+                        {liveDocAnalysis.ddeDetected ? "DDE / Cmd Injection" : "Clean"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <p className="text-[11px] text-slate-500">
                 Detects auto-open procedures, VBA macro streams, DDE command injection, hidden worksheets, and suspicious remote templates.
               </p>
@@ -750,6 +1103,41 @@ function ScanContent() {
                   className="w-full rounded border border-slate-300 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
                 />
               </div>
+
+              {/* LIVE CYBERBULLYING HUD */}
+              {cyberbullyingInput.trim().length > 4 && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                      <UserXIcon className="h-3.5 w-3.5 text-slate-700" />
+                      Live Hostility Gauge
+                    </span>
+                    <span className="font-mono font-bold text-slate-800">{liveCyberAnalysis.hostilityScore}% Toxicity</span>
+                  </div>
+                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${
+                        liveCyberAnalysis.hostilityScore > 60
+                          ? "bg-red-600"
+                          : liveCyberAnalysis.hostilityScore > 30
+                          ? "bg-amber-500"
+                          : "bg-emerald-500"
+                      }`}
+                      style={{ width: `${liveCyberAnalysis.hostilityScore}%` }}
+                    />
+                  </div>
+                  {liveCyberAnalysis.categories.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                      {liveCyberAnalysis.categories.map((cat, i) => (
+                        <span key={i} className="bg-red-100 text-red-900 border border-red-200 text-[10px] font-semibold px-2 py-0.5 rounded">
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <p className="text-[11px] text-slate-500">
                 Analyzes targeted harassment, personal intimidation, doxxing (exposure of private room numbers/contacts), and hostile communications.
               </p>
@@ -768,16 +1156,61 @@ function ScanContent() {
               className="inline-flex items-center gap-2 rounded-md bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:bg-slate-400 transition-colors shadow-xs"
             >
               <ScanIcon className="h-4 w-4" />
-              {loading ? "Analyzing Threats..." : "Run Security Scan"}
+              {loading ? "Analyzing Pipeline..." : "Run Security Scan"}
             </button>
           </div>
         </form>
       </div>
 
-      {/* Loading Skeleton */}
-      {loading && <SkeletonCard />}
+      {/* ANIMATED FORENSIC DIAGNOSTIC PIPELINE (Active while loading) */}
+      {loading && (
+        <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-xs space-y-4 animate-pulse">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div className="flex items-center gap-2">
+              <RefreshCwIcon className="h-4 w-4 animate-spin text-blue-600" />
+              <h3 className="text-sm font-bold text-slate-900">Executing Threat Detection Pipeline</h3>
+            </div>
+            <span className="text-xs font-mono text-slate-500">Stage {pipelineStep} of 5</span>
+          </div>
 
-      {/* Analysis Results Display */}
+          <div className="space-y-2.5">
+            {[
+              { step: 1, title: "Lexical & Structural Vector Extraction", desc: "Computing 34 URL / text features according to schema v1.0.0" },
+              { step: 2, title: "Campus Whitelist & Heuristic Rules", desc: "Verifying educational domains, authorized SSO portals, and typosquatting" },
+              { step: 3, title: "Threat Intelligence Correlation", desc: "Querying local URLhaus & PhishTank high-confidence IOC hash database" },
+              { step: 4, title: "Machine Learning Model Inference", desc: "Executing trained Random Forest / Transformer weights in isolated runtime" },
+              { step: 5, title: "Synthesizing Security Intelligence & Actions", desc: "Correlating evidence, SHAP feature weights, and remediation recommendations" },
+            ].map((st) => (
+              <div
+                key={st.step}
+                className={`p-3 rounded border text-xs flex items-center justify-between transition-all ${
+                  pipelineStep > st.step
+                    ? "border-emerald-200 bg-emerald-50/50 text-emerald-900"
+                    : pipelineStep === st.step
+                    ? "border-blue-300 bg-blue-50 text-blue-900 font-semibold shadow-xs"
+                    : "border-slate-100 bg-slate-50/50 text-slate-400"
+                }`}
+              >
+                <div>
+                  <div className="font-semibold">{st.title}</div>
+                  <div className="text-[11px] opacity-80">{st.desc}</div>
+                </div>
+                <div>
+                  {pipelineStep > st.step ? (
+                    <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+                  ) : pipelineStep === st.step ? (
+                    <span className="inline-block h-2 w-2 rounded-full bg-blue-600 animate-ping" />
+                  ) : (
+                    <span className="text-[10px] text-slate-400">Pending</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ANALYSIS RESULTS DISPLAY */}
       {result && !loading && (
         <div className="rounded-lg border border-slate-200 bg-white p-6 sm:p-8 shadow-xs space-y-6">
           
@@ -791,60 +1224,70 @@ function ScanContent() {
               </p>
             </div>
 
-            {(() => {
-              const badge = getVerdictBadge(result.verdict);
-              const Icon = badge.icon;
-              return (
-                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded border text-xs font-bold ${badge.bg}`}>
-                  <Icon className="h-4 w-4" />
-                  <span>{badge.label}</span>
-                </div>
-              );
-            })()}
+            <div className="flex items-center gap-2">
+              {(() => {
+                const badge = getVerdictBadge(result.verdict);
+                const Icon = badge.icon;
+                return (
+                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded border text-xs font-bold ${badge.bg}`}>
+                    <Icon className="h-4 w-4" />
+                    <span>{badge.label}</span>
+                  </div>
+                );
+              })()}
+            </div>
           </div>
 
-          {/* Risk Score & Gauges */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-slate-200 pb-6">
-            <div className="rounded border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-medium text-slate-500">Heuristic Risk Score</p>
-              <div className="flex items-baseline gap-2 mt-1">
-                <span className={`text-3xl font-extrabold ${
-                  result.riskScore > 70 ? "text-red-700" : result.riskScore > 40 ? "text-amber-700" : "text-emerald-700"
-                }`}>
-                  {result.riskScore}
-                </span>
-                <span className="text-xs text-slate-400 font-medium">/ 100</span>
+          {/* Interactive Radial Gauge & Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 border-b border-slate-200 pb-6 items-center">
+            
+            {/* Radial Risk Dial */}
+            <div className="col-span-1 border border-slate-200 bg-slate-50/60 rounded-lg p-4">
+              <RadialRiskGauge score={result.riskScore} />
+            </div>
+
+            {/* Model Confidence & Feature Dimension button */}
+            <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-500">Model Confidence</span>
+                <span className="text-xs font-bold text-slate-900">{Math.round(result.confidence * 100)}%</span>
               </div>
-              <div className="w-full bg-slate-200 h-1.5 rounded-full mt-2 overflow-hidden">
+              <p className="text-2xl font-black text-slate-900">
+                {(result.confidence * 100).toFixed(1)}%
+              </p>
+              <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
                 <div
-                  className={`h-full ${
-                    result.riskScore > 70 ? "bg-red-600" : result.riskScore > 40 ? "bg-amber-600" : "bg-emerald-600"
-                  }`}
-                  style={{ width: `${result.riskScore}%` }}
+                  className="h-full bg-slate-900"
+                  style={{ width: `${Math.round(result.confidence * 100)}%` }}
                 />
               </div>
+              <button
+                type="button"
+                onClick={() => setShowFeatureModal(true)}
+                className="w-full mt-2 inline-flex items-center justify-center gap-1.5 rounded border border-slate-300 bg-white py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
+              >
+                <TerminalIcon className="h-3.5 w-3.5 text-slate-600" />
+                Inspect 34 Feature Vector
+              </button>
             </div>
 
-            <div className="rounded border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-medium text-slate-500">Model Confidence</p>
-              <p className="text-3xl font-extrabold text-slate-900 mt-1">
-                {Math.round(result.confidence * 100)}%
-              </p>
-              <p className="text-[11px] text-slate-500 mt-2">
-                {result.payloadType
-                  ? `Modality: ${result.payloadType}`
-                  : "Based on 34-feature vector & rule coverage."}
-              </p>
-            </div>
-
-            <div className="rounded border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-medium text-slate-500">Threat Level</p>
-              <p className="text-2xl font-extrabold text-slate-900 mt-1 uppercase tracking-wide">
+            {/* Threat Level & Containment */}
+            <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-2">
+              <span className="text-xs font-medium text-slate-500">Institutional Threat Tier</span>
+              <p className="text-2xl font-black uppercase tracking-wide text-slate-900">
                 {result.threatLevel}
               </p>
-              <p className="text-[11px] text-slate-500 mt-2">
-                Correlated with campus incident database.
+              <p className="text-[11px] text-slate-500">
+                Correlated with Campus Threat Intel database.
               </p>
+              <button
+                type="button"
+                onClick={() => setShowFirewallModal(true)}
+                className="w-full mt-2 inline-flex items-center justify-center gap-1.5 rounded border border-slate-300 bg-white py-1.5 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors"
+              >
+                <ShieldIcon className="h-3.5 w-3.5 text-slate-600" />
+                Generate Firewall Block Rule
+              </button>
             </div>
           </div>
 
@@ -882,29 +1325,84 @@ function ScanContent() {
 
           {/* Executive Summary */}
           <div>
-            <h3 className="text-sm font-bold text-slate-900 mb-1">Executive Summary</h3>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-sm font-bold text-slate-900">Executive Summary</h3>
+              <button
+                type="button"
+                onClick={handleCopyJson}
+                className="inline-flex items-center gap-1 text-xs text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                {copiedJson ? (
+                  <>
+                    <CheckIcon className="h-3.5 w-3.5 text-emerald-600" />
+                    <span className="text-emerald-700 font-semibold">Report Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <CopyIcon className="h-3.5 w-3.5" />
+                    <span>Copy JSON Report</span>
+                  </>
+                )}
+              </button>
+            </div>
             <p className="text-xs text-slate-700 leading-relaxed bg-slate-50 border border-slate-200 rounded p-3">
               {result.summary}
             </p>
           </div>
 
-          {/* Indicators Breakdown */}
+          {/* Indicators Breakdown with Interactive Filter Tabs */}
           {result.indicators.length > 0 && (
             <div>
-              <h3 className="text-sm font-bold text-slate-900 mb-2">Identified Threat Indicators</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-bold text-slate-900">
+                  Identified Threat Indicators ({result.indicators.length})
+                </h3>
+                <div className="flex items-center gap-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setIndicatorFilter("ALL")}
+                    className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
+                      indicatorFilter === "ALL" ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    All ({result.indicators.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIndicatorFilter("DANGER")}
+                    className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
+                      indicatorFilter === "DANGER" ? "bg-red-700 text-white" : "bg-red-50 text-red-700 hover:bg-red-100"
+                    }`}
+                  >
+                    Critical ({result.indicators.filter((i) => i.severity === "danger").length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIndicatorFilter("WARNING")}
+                    className={`px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${
+                      indicatorFilter === "WARNING" ? "bg-amber-700 text-white" : "bg-amber-50 text-amber-700 hover:bg-amber-100"
+                    }`}
+                  >
+                    Moderate ({result.indicators.filter((i) => i.severity === "warning").length})
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-2">
-                {result.indicators.map((ind, i) => (
+                {filteredIndicators.map((ind, i) => (
                   <div
                     key={i}
-                    className={`border rounded p-3 text-xs flex items-start gap-3 ${
+                    className={`border rounded p-3 text-xs flex items-start gap-3 transition-colors ${
                       ind.severity === "danger"
                         ? "border-red-200 bg-red-50/40 text-red-950"
                         : "border-amber-200 bg-amber-50/40 text-amber-950"
                     }`}
                   >
-                    <AlertCircleIcon className={`h-4 w-4 shrink-0 mt-0.5 ${
-                      ind.severity === "danger" ? "text-red-600" : "text-amber-600"
-                    }`} />
+                    <AlertCircleIcon
+                      className={`h-4 w-4 shrink-0 mt-0.5 ${
+                        ind.severity === "danger" ? "text-red-600" : "text-amber-600"
+                      }`}
+                    />
                     <div>
                       <span className="font-semibold">{ind.label}:</span>{" "}
                       <span className="text-slate-700">{ind.description}</span>
@@ -949,13 +1447,218 @@ function ScanContent() {
         </div>
       )}
 
+      {/* MODAL 1: 34 MACHINE LEARNING FEATURE DIMENSIONS INSPECTOR */}
+      {showFeatureModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-4xl w-full max-h-[85vh] flex flex-col overflow-hidden animate-fadeIn">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+              <div>
+                <div className="flex items-center gap-2">
+                  <TerminalIcon className="h-5 w-5 text-slate-800" />
+                  <h3 className="text-base font-bold text-slate-900">34-Feature Forensic Vector Matrix</h3>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Authoritative feature schema URL_FEATURE_SCHEMA_V1 consumed by Random Forest classifier.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowFeatureModal(false)}
+                className="text-slate-400 hover:text-slate-700 text-sm font-bold p-1 rounded"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Controls: Search & Category Filter */}
+            <div className="px-6 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
+              <input
+                type="text"
+                value={featureSearch}
+                onChange={(e) => setFeatureSearch(e.target.value)}
+                placeholder="Search features (e.g. entropy, dot, hyphen, keyword)..."
+                className="rounded border border-slate-300 px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-slate-900 w-full sm:w-64"
+              />
+
+              <div className="flex items-center gap-1 overflow-x-auto text-xs">
+                {(["all", "structural", "domain", "lexical", "heuristic"] as const).map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setFeatureCategory(cat)}
+                    className={`px-2.5 py-1 rounded text-[11px] font-semibold uppercase tracking-wider transition-colors shrink-0 ${
+                      featureCategory === cat ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Content: 34 Features Table */}
+            <div className="p-6 overflow-y-auto space-y-3 flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {filteredFeatures.map((feat) => (
+                  <div
+                    key={feat.key}
+                    className={`p-3 rounded-lg border text-xs flex flex-col justify-between transition-all ${
+                      feat.status === "critical"
+                        ? "border-red-200 bg-red-50/50"
+                        : feat.status === "elevated"
+                        ? "border-amber-200 bg-amber-50/40"
+                        : "border-slate-200 bg-slate-50/40"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-slate-900 font-mono">{feat.name}</span>
+                        <span
+                          className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                            feat.status === "critical"
+                              ? "bg-red-600 text-white"
+                              : feat.status === "elevated"
+                              ? "bg-amber-600 text-white"
+                              : "bg-emerald-600 text-white"
+                          }`}
+                        >
+                          {feat.status}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600">{feat.description}</p>
+                    </div>
+
+                    <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                      <div>
+                        <span className="text-slate-400">Value: </span>
+                        <span className="font-bold font-mono text-slate-900">{feat.value}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">Safe Baseline: </span>
+                        <span className="font-mono text-slate-700">{feat.safeRange}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+              <span className="text-slate-500">
+                Displaying {filteredFeatures.length} of {urlFeatures34.length} vector dimensions
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowFeatureModal(false)}
+                className="bg-slate-900 text-white px-4 py-1.5 rounded font-semibold hover:bg-slate-800 transition-colors"
+              >
+                Close Inspector
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: FIREWALL & DNS SINKHOLE RULE GENERATOR */}
+      {showFirewallModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-2xl w-full flex flex-col overflow-hidden animate-fadeIn">
+            
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+              <div className="flex items-center gap-2">
+                <ShieldIcon className="h-5 w-5 text-slate-800" />
+                <h3 className="text-base font-bold text-slate-900">Campus CIRT Mitigation Rules</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowFirewallModal(false)}
+                className="text-slate-400 hover:text-slate-700 text-sm font-bold p-1 rounded"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <p className="text-xs text-slate-600">
+                Instantly generated containment rules for campus gateway firewalls and internal DNS resolvers to prevent student credential leaks.
+              </p>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold text-slate-800">Linux iptables Drop Rule</span>
+                </div>
+                <pre className="bg-slate-900 text-emerald-400 p-3 rounded text-xs font-mono overflow-x-auto">
+                  {firewallRules.iptables}
+                </pre>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold text-slate-800">Windows Defender Firewall PowerShell</span>
+                </div>
+                <pre className="bg-slate-900 text-blue-300 p-3 rounded text-xs font-mono overflow-x-auto">
+                  {firewallRules.powershell}
+                </pre>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-semibold text-slate-800">BIND RPZ DNS Sinkhole Entry</span>
+                </div>
+                <pre className="bg-slate-900 text-amber-300 p-3 rounded text-xs font-mono overflow-x-auto">
+                  {firewallRules.dnsRpz}
+                </pre>
+              </div>
+            </div>
+
+            <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `${firewallRules.iptables}\n\n${firewallRules.powershell}\n\n${firewallRules.dnsRpz}`
+                  );
+                  setCopiedRule(true);
+                  setTimeout(() => setCopiedRule(false), 2000);
+                }}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900"
+              >
+                {copiedRule ? (
+                  <>
+                    <CheckIcon className="h-4 w-4 text-emerald-600" />
+                    <span className="text-emerald-700 font-bold">All Rules Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <CopyIcon className="h-4 w-4" />
+                    <span>Copy All Rules</span>
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowFirewallModal(false)}
+                className="bg-slate-900 text-white px-4 py-1.5 rounded font-semibold hover:bg-slate-800 transition-colors"
+              >
+                Done
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
 
 export default function ScanPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-8"><SkeletonCard /></div>}>
+    <Suspense fallback={<div className="mx-auto max-w-5xl px-4 py-8"><div className="h-64 bg-slate-100 rounded-lg animate-pulse" /></div>}>
       <ScanContent />
     </Suspense>
   );
