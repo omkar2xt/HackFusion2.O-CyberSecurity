@@ -326,7 +326,7 @@ export const apiClient = {
     url?: string;
     messageText?: string;
     qrPayload?: string;
-    documentMeta?: { fileName: string; fileSize?: number; fileType?: string; details?: string; features?: Record<string, any> };
+    documentMeta?: { fileName: string; fileSize?: number; fileType?: string; details?: string; features?: Record<string, unknown> };
     cyberbullyingText?: string;
   }): Promise<ScanResult> {
     try {

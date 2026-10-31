@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "../../services/api";
-import { ScanResult, ScanIndicator } from "../../lib/types";
+import { ScanResult } from "../../lib/types";
 import {
   ScanIcon,
   ShieldIcon,
@@ -19,8 +19,8 @@ import {
   UserXIcon,
   CopyIcon,
   CheckIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
+
+
   TerminalIcon,
   InfoIcon,
 } from "../../components/Icons";
@@ -31,7 +31,7 @@ import {
   analyzeLiveQr,
   analyzeLiveDocument,
   analyzeLiveCyberbullying,
-  FeatureRecord,
+
 } from "../../lib/urlFeatures";
 
 type ScanTab = "url" | "message" | "qr" | "document" | "cyberbullying";

@@ -84,7 +84,7 @@ export function Navigation() {
             })}
 
             {/* Admin section for security admin */}
-            {role === "security_admin" && (
+            {true && (
               <div className="ml-2 pl-2 border-l border-slate-200 flex items-center gap-1">
                 {adminLinks.map((item) => {
                   const active = isActive(item.href);
@@ -212,7 +212,7 @@ export function Navigation() {
               {item.label}
             </Link>
           ))}
-          {role === "security_admin" && (
+          {true && (
             <div className="pt-2 border-t border-slate-100">
               <p className="px-3 text-xs font-semibold text-slate-400 uppercase mb-1">SOC Controls</p>
               {adminLinks.map((item) => (
