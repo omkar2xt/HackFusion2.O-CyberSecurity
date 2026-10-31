@@ -1,0 +1,3 @@
+# SignalSafe Campus — Root dependency reference for Vercel deployment
+# References backend/requirements.txt to prevent duplicate dependency maintenance.
+-r backend/requirements.txt
